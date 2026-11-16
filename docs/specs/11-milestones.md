@@ -1,0 +1,53 @@
+# 11 · Development milestones
+
+Status: proposed. Each milestone ends with a review and a working, tested increment. No milestone
+starts until the previous one is accepted. Phases are the blueprint's (§29–§32).
+
+## Phase 0 · Sign-off (now)
+
+- **M0 · Specifications agreed.** Owner reviews `docs/specs/` and answers the open questions in
+  `docs/decisions.md`. Exit: decisions recorded.
+
+## Phase 1 · Core Command Centre
+
+| # | Milestone | Includes | Exit criteria |
+|---|---|---|---|
+| M1 | Foundations | Next.js scaffold, TypeScript strict, lint, CI, Supabase local stack, migration tooling, env checks, Sentry | CI green on an empty app; local stack runs from one command |
+| M2 | Tenancy and auth | Organisations, workspaces, brands, memberships, roles, permissions, invitations, `has_permission`, RLS, audit events, record versions | Isolation suite (`03` §7) passes for all tables; sign-up → org created |
+| M3 | Design system | Tokens (`09`), primitives, shell (nav, top bar, side panel), `/design-system` page, light/dark/system theme persisted | axe clean in both modes; keyboard walkthrough of shell |
+| M4 | Business profile and onboarding | Profile, offerings, locations, audiences, competitors, progressive onboarding checklist | J1 works end to end (AI pre-fill deferred to Phase 2) |
+| M5 | Projects and tasks | Projects, milestones, tasks, dependencies, recurring, my tasks, workload, risk flags | M07 requirements pass |
+| M6 | Strategy and objectives | Plans, SWOT, objectives, KPIs, progress view, version compare | J3 works without AI |
+| M7 | Knowledge hub | Upload, extraction, tagging, search (full-text first; embeddings in M9) | Documents isolated per org in tests |
+| M8 | Home and basic reporting | Home dashboard (`04` §6), KPI tiles, manual metrics, GA4 + Search Console connectors | Home shows only real data with sources |
+
+## Phase 2 · AI intelligence and workforce
+
+| # | Milestone | Includes |
+|---|---|---|
+| M9 | AI service | Provider interface, Claude provider, model registry, usage metering, budgets, embeddings and retrieval |
+| M10 | Intelligence register and approvals | Intelligence records and workflow, recommendations, Approval Centre and rules |
+| M11 | Agents | Agent templates, configuration, autonomy gate, runs and traces, schedules and triggers, first seven agents (`08` §8) |
+| M12 | Strategy Assistant | Chat, citations, proposals as cards, handoffs to specialists |
+
+## Phase 3 · Connected ecosystem
+
+| # | Milestone | Includes |
+|---|---|---|
+| M13 | Ecosystem API | `/api/v1`, OAuth for integration principals, webhooks in and out, OpenAPI, contract tests |
+| M14 | Reel Deal | Linking, brand push, production requests, status, approvals, exports (requires Reel Deal gaps `07` §3.5) |
+| M15 | Findable | Linking, intelligence and metrics ingestion, recommendations sync |
+| M16 | Unified reporting | Cross-channel reports, monthly/quarterly reviews, PDF export, entitlements across products |
+
+## Phase 4 · Commercial scale
+
+M17 Billing and Stripe · M18 Agencies and client management · M19 Advanced permissions, custom roles,
+SSO · M20 Forecasting and attribution · M21 White-label · M22 Workflow automation and support tooling.
+
+## Dependencies on other teams
+
+- Reel Deal: REST surface, OAuth server, webhooks, `cc_ref`/`deadline`, storyboard decision endpoint
+  (before M14).
+- Findable: API per `07` §4 or a counter-proposal (before M15).
+- Shared foundation package for tokens and components (before M3 ideally, or M3 builds locally and
+  extracts later).
