@@ -13,7 +13,8 @@ starts until the previous one is accepted. Phases are the blueprint's (§29–§
 | # | Milestone | Includes | Exit criteria |
 |---|---|---|---|
 | M1 | Foundations | Next.js scaffold, TypeScript strict, lint, CI, Supabase local stack, migration tooling, env checks, Sentry | CI green on an empty app; local stack runs from one command |
-| M2 | Tenancy and auth | Organisations, workspaces, brands, memberships, roles, permissions, invitations, `has_permission`, RLS, audit events, record versions | Isolation suite (`03` §7) passes for all tables; sign-up → org created |
+| M2a | Accounts service (`13`) | Shared sign-in (Supabase Auth), organisations, memberships, product access, invitations, token issuing and JWKS, outbox events, product switcher component, subscriptions assigned by staff (Stripe checkout comes in M17) | A user signs up once and reaches Command Centre without a second sign-in |
+| M2b | Tenancy in Command Centre | Token verification, account mirrors, workspaces, brands, Command Centre roles and permissions, `has_permission`, RLS, audit events, record versions | Isolation suite (`03` §7) passes for all tables; removing a member in accounts blocks them in Command Centre within a minute |
 | M3 | Design system | Tokens (`09`), primitives, shell (nav, top bar, side panel), `/design-system` page, light/dark/system theme persisted | axe clean in both modes; keyboard walkthrough of shell |
 | M4 | Business profile and onboarding | Profile, offerings, locations, audiences, competitors, progressive onboarding checklist | J1 works end to end (AI pre-fill deferred to Phase 2) |
 | M5 | Projects and tasks | Projects, milestones, tasks, dependencies, recurring, my tasks, workload, risk flags | M07 requirements pass |
@@ -34,19 +35,19 @@ starts until the previous one is accepted. Phases are the blueprint's (§29–§
 
 | # | Milestone | Includes |
 |---|---|---|
-| M13 | Ecosystem API | `/api/v1`, OAuth for integration principals, webhooks in and out, OpenAPI, contract tests |
-| M14 | Reel Deal | Linking, brand push, production requests, status, approvals, exports (requires Reel Deal gaps `07` §3.5) |
-| M15 | Findable | Linking, intelligence and metrics ingestion, recommendations sync |
+| M13 | Ecosystem API | `/api/v1`, token exchange between products (`13` §5), webhooks in and out, OpenAPI, contract tests |
+| M14 | Reel Deal | Shared-account connection, brand push, production requests, status, approvals, exports (requires Reel Deal gaps `07` §3.5) |
+| M15 | Findable | Shared-account connection, intelligence and metrics ingestion, recommendations sync |
 | M16 | Unified reporting | Cross-channel reports, monthly/quarterly reviews, PDF export, entitlements across products |
 
 ## Phase 4 · Commercial scale
 
-M17 Billing and Stripe · M18 Agencies and client management · M19 Advanced permissions, custom roles,
+M17 Billing and Stripe (in accounts) · M18 Agencies and client management · M19 Advanced permissions, custom roles,
 SSO · M20 Forecasting and attribution · M21 White-label · M22 Workflow automation and support tooling.
 
 ## Dependencies on other teams
 
-- Reel Deal: REST surface, OAuth server, webhooks, `cc_ref`/`deadline`, storyboard decision endpoint
+- Reel Deal: move onto the shared account (`13` §7), REST surface, webhooks, `cc_ref`/`deadline`, storyboard decision endpoint
   (before M14).
 - Findable: API per `07` §4 or a counter-proposal (before M15).
 - Shared foundation package for tokens and components (before M3 ideally, or M3 builds locally and

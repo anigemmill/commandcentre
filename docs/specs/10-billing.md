@@ -1,6 +1,9 @@
 # 10 · Subscription and billing architecture
 
-Status: proposed. Covers blueprint §15 and §32. Prices are owner decisions and are not set here;
+Status: proposed. Covers blueprint §15 and §32. **Billing for all products lives in the shared accounts
+service (`13`)**: one Stripe customer per organisation. A bundle is one subscription and one bill; an organisation that
+buys a single product has just that product's subscription, billed on its own.
+Each product mirrors subscriptions and entitlements and meters its own usage. Prices are owner decisions and are not set here;
 everything below reads from config.
 
 ## 1. Concepts
@@ -47,9 +50,9 @@ everything below reads from config.
 
 | Table | Columns |
 |---|---|
-| `subscriptions` | `org_id`, `stripe_subscription_id`, `plan_key`, `status` (`trialing`, `active`, `past_due`, `cancelled`), `period_start`, `period_end`, `cancel_at` |
+| `subscriptions` (accounts; mirrored) | `org_id`, `product`, `stripe_subscription_id`, `plan_key`, `status` (`trialing`, `active`, `past_due`, `cancelled`), `period_start`, `period_end`, `cancel_at` |
 | `subscription_items` | `subscription_id`, `addon_key`, `quantity` |
-| `entitlements` | `org_id`, `key`, `value jsonb`, `source` (`plan`, `addon`, `override`), `valid_until` (materialised view, recomputed on subscription change) |
+| `entitlements` (accounts; mirrored) | `org_id`, `product`, `key`, `value jsonb`, `source` (`plan`, `addon`, `override`), `valid_until` (materialised view, recomputed on subscription change) |
 | `usage_events` | `org_id`, `workspace_id`, `kind`, `quantity`, `unit`, `cost_micros`, `ref`, `at` (append-only) |
 | `credit_ledger` | `org_id`, `delta`, `reason` (`grant`, `hold`, `charge`, `release`, `expire`, `purchase`), `ref`, `balance_after` |
 
@@ -58,7 +61,7 @@ failure.
 
 ## 4. Flows
 
-- **Checkout:** Stripe Checkout → webhook `customer.subscription.*` → upsert subscription → recompute
+- **Checkout (in accounts):** Stripe Checkout → webhook `customer.subscription.*` → upsert subscription → recompute
   entitlements → audit event. Webhooks are verified, idempotent (event id stored) and processed by the
   worker.
 - **Upgrade:** immediate, prorated. **Downgrade:** at period end. If usage exceeds the new limits
@@ -66,9 +69,9 @@ failure.
   never deletes data automatically.
 - **Enforcement:** `requireEntitlement(ctx, key)` in services; UI hides or explains locked features
   with an upgrade path (no fake previews of locked data).
-- **Bundles across products:** each product checks its own entitlements. When products are linked,
-  Command Centre publishes `entitlements.updated` to them, or each product reads a shared billing
-  service (open question 7).
+- **Products and bundles:** accounts computes entitlements per product and publishes
+  `entitlements.updated` events; each product checks its own mirror. Adding a product is a
+  subscription change in accounts, after which the product appears in everyone's switcher.
 
 ## 5. Agencies (Phase 4)
 

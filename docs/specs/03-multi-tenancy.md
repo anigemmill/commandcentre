@@ -4,6 +4,9 @@ Status: proposed. Covers blueprint §6 and §27–§28.
 
 ## 1. Hierarchy
 
+People and organisations live in the shared Outside In account (`13`); the same organisation id is the
+tenant in every product. Workspaces and brands below are Command Centre's own.
+
 ```
 Organisation (tenant, billing unit, isolation boundary)
  ├─ Workspace (a business or business unit: its own profile, strategy, projects, integrations)
@@ -34,18 +37,21 @@ returns boolean language sql stable security definer
 set search_path = app, public, pg_temp as $$
   select exists (
     select 1
-    from memberships m
-    join role_permissions rp on rp.role_id = m.role_id
+    from memberships m                          -- mirror from accounts (13)
+    join cc_access a on a.org_id = m.org_id and a.user_id = m.user_id
+    join role_permissions rp on rp.role_id = a.role_id
     where m.user_id = app.current_principal_user()
       and m.org_id = p_org
       and m.status = 'active'
+      and app.org_has_product(p_org, 'command_centre')  -- subscription mirror
       and rp.permission_key = p_perm
-      and (m.workspace_ids is null or p_workspace = any(m.workspace_ids))
+      and (a.workspace_ids is null or p_workspace = any(a.workspace_ids))
   ) and app.principal_allows(p_perm);  -- narrows further for agent and integration principals
 $$;
 ```
 
-- `app.current_principal_user()` reads `auth.uid()`. `app.principal_allows()` reads a per-transaction
+- `app.current_principal_user()` reads `auth.uid()`, which comes from the shared-account token the
+  server verified and set as `request.jwt.claims` for the transaction (`13` §2). `app.principal_allows()` reads a per-transaction
   setting (`set local app.principal = …`) that the service layer sets for agent runs and integration
   calls, so an agent can do **less** than its authorising user, never more.
 - Every insert/update policy has `with check`, so a row cannot be moved to another org by editing `org_id`.

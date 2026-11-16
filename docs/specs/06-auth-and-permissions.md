@@ -8,9 +8,9 @@ Every request runs as exactly one principal:
 
 | Principal | Authenticated by | Used for |
 |---|---|---|
-| `user` | Supabase Auth session (cookie) | The app |
+| `user` | Outside In account session (shared sign-in, `13`) | The app |
 | `agent` | Internal: created by the job worker for an `agent_run` | AI workforce |
-| `integration` | OAuth 2.1 access token (client credentials or user-delegated) | Findable, Reel Deal, customer API clients |
+| `integration` | Accounts-issued token for another product (token exchange) or a customer API client | Findable, Reel Deal, customer API clients |
 
 Agent and integration principals always carry an `on_behalf_of` user or organisation, and a list of
 permission keys. Effective permission = role permissions of the authorising user ∩ the principal's own
@@ -50,34 +50,39 @@ list.
 
 ## 4. Sessions and security
 
+Sign-in, sessions and MFA belong to the shared Outside In account (`13`), so they behave the same in
+every product:
+
 - Email + password with breached-password check, magic link, Google and Microsoft sign-in.
-- MFA (TOTP) available to all; organisations can require it (enforced at route level).
-- Sessions: 7-day refresh, revocable from Security settings; sign-out everywhere.
-- SAML/SCIM for enterprise: Phase 4.
-- Rate limits on sign-in, invite and API endpoints.
+- MFA (TOTP) available to all; organisations can require it (accounts enforces it at sign-in, products
+  check the `amr` claim on sensitive actions).
+- One session across products; revocable from account security settings; sign-out everywhere.
+- SAML/SCIM for enterprise: Phase 4, in the accounts service.
+- Rate limits on sign-in and invites (accounts) and on each product's API.
 
-## 5. Cross-product identity
+## 5. Cross-product identity (owner decision, 2026-11-16)
 
-**Phase 3 (proposed):** products keep their own user accounts and link at the organisation level.
+**One account signs a person in to every product. Products are added to the organisation by
+subscription.** Full design: `13-accounts-and-identity.md`. In short:
 
-1. An admin in Command Centre clicks "Connect Reel Deal" → OAuth 2.1 authorisation code + PKCE flow
-   against Reel Deal's authorisation server → the admin signs in to Reel Deal and picks the Reel Deal
-   organisation → consents to the requested scopes.
-2. Command Centre stores the tokens in Supabase Vault, referenced from `integrations.credential_ref`.
-3. Calls to Reel Deal are made as the linked organisation, with the user's identity passed as a hint
-   for audit (`X-Acting-User` email hash). Reel Deal applies its own roles.
-4. Findable is linked the same way.
-
-**Later (owner decision):** a shared Outside In identity (one sign-in, SSO across products). The
-`integration` principal model does not change; only the sign-in step does.
+1. The accounts service owns users, organisations, organisation roles, product access, subscriptions
+   and entitlements.
+2. Each product verifies accounts tokens itself and mirrors the account data it needs for RLS.
+3. Organisation roles (owner, admin, member, billing) are shared. Product roles (the table in §2 for
+   Command Centre) are held by each product.
+4. Subscribing to Reel Deal or Findable is the connection: no separate OAuth consent between products.
+   Admins can switch the data exchange off per organisation.
 
 ## 6. Scopes between products
+
+When one product calls another (token exchange, `13` §5), the token carries these scopes. They are
+granted automatically while both products are subscribed and the data exchange is on.
 
 | Product | Scope | Allows |
 |---|---|---|
 | Reel Deal | `rd:read` | Brands, projects, status, exports |
 | Reel Deal | `rd:write` | Create/update brand profile, create projects and briefs, submit approval decisions |
-| Reel Deal | `rd:render` | **Not requested by Command Centre.** Renders are confirmed by a person in Reel Deal |
+| Reel Deal | `rd:render` | **Never granted to Command Centre.** Renders are confirmed by a person in Reel Deal |
 | Findable | `fd:read` | Findings, visibility, opportunities, recommendations, performance |
 | Findable | `fd:write` | Update recommendation status, request an audit |
 | Command Centre | `cc:context.read` | Business profile, brands, audiences, competitors, campaigns (for the other products) |

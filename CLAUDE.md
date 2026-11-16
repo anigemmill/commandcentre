@@ -1,5 +1,7 @@
 # Command Centre — The Outside In
 
+"Command Centre" is a working name; the product has no final name yet.
+
 AI-powered business growth and marketing operating system. The central intelligence and orchestration
 layer of The Outside In ecosystem, alongside **Findable** (discoverability) and **Reel Deal** (video).
 
@@ -10,6 +12,8 @@ layer of The Outside In ecosystem, alongside **Findable** (discoverability) and 
 - `docs/decisions.md`: decisions made since the blueprint, plus **open questions for the owner**.
 - `docs/specs/`: the twelve pre-implementation deliverables from blueprint section 37. Build from these.
 - `docs/specs/11-milestones.md`: what to build, in order.
+- `docs/specs/13-accounts-and-identity.md`: one Outside In account signs people in to every product;
+  products are added by subscription. Users, organisations and billing are mastered there, not here.
 
 ## Status
 

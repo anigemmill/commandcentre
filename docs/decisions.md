@@ -1,7 +1,8 @@
 # Decisions
 
 Changes to, or interpretations of, `docs/blueprint.md`. Newest last. Each entry names the blueprint
-section it affects. **Proposed** means drafted in the specs and awaiting owner sign-off.
+section it affects. **Proposed** means drafted in the specs and awaiting owner sign-off. **Decided**
+means the owner has confirmed it.
 
 ## 2026-11-16: specification round
 
@@ -24,21 +25,44 @@ section it affects. **Proposed** means drafted in the specs and awaiting owner s
 - **Integration direction** (§10, proposed). Findable and Reel Deal stay the systems of record for their
   own data. Command Centre stores references and summaries, not copies of their specialist records.
 
+## 2026-11-16: owner answers
+
+- **Working name** (decided). "Command Centre" is a working name; the product has no final name yet.
+- **One account for every product** (§6, §15, decided). One Outside In account signs a person in to all
+  products; an organisation adds products by subscribing. This replaces the earlier proposal of
+  separate accounts linked by OAuth. Architecture change: a shared **accounts service** owns users,
+  organisations, organisation roles, product access, subscriptions and entitlements. Each product keeps
+  its own database, verifies account tokens itself and mirrors the account data it needs for RLS.
+  Design in `docs/specs/13-accounts-and-identity.md`; specs 02, 03, 06, 07, 10 and 11 updated to match.
+  Why separate product databases: one product's outage or breach does not expose another's data, and
+  each product can be sold and run on its own (§1).
+- **Billing** (§15, decided). One Stripe customer per organisation in the accounts service. A bundle is
+  one bill; buying a single product is a single subscription, billed on its own. Both run through the
+  same accounts billing (`docs/specs/10-billing.md`).
+- **Hosting region** (§28, decided on the owner's delegation). Sydney for everything: Supabase
+  `ap-southeast-2`, Cloudflare R2 with the Oceania location hint, Vercel functions in `syd1`, the job
+  worker in Sydney. Reasons: closest region to New Zealand that all three providers offer (none has a
+  New Zealand region), low latency for NZ and Australian customers, and Reel Deal already runs there,
+  so the products share a region. Customers are told where their data is stored (privacy policy and
+  security page). Model providers may process prompts outside Australia; that is disclosed under AI
+  usage transparency (§28).
+- **Shared design foundation** (§22–§23, decided on the owner's delegation). Build the foundation
+  tokens (`--oi-*`) and shared components inside this repo first, in a clearly separated folder
+  (`packages/foundation/`). Extract them into a private npm package on GitHub Packages once a second
+  product (Reel Deal or Findable) adopts them. Reason: one product's real needs shape the foundation
+  before it is shared, and nothing has to be published or versioned until there is a second consumer.
+- **Findable is live** (§10). Its contract in `docs/specs/07-integration-contracts.md` §4 is still a
+  proposal until it is checked against Findable's real API.
+
 ## Open questions for the owner
 
-1. **Product name.** The blueprint writes "Reel Deal". The Reel Deal repo uses "Reeldeal" as a working
-   name to be confirmed before launch. Which is it?
+1. **Reel Deal's name.** The blueprint writes "Reel Deal"; its repo uses "Reeldeal", also as a working
+   name. Is either final?
 2. **AI provider.** The blueprint says Claude initially. Reel Deal's live AI is currently on OpenAI. Should
    Reel Deal move to Claude for consistency, or stay as is behind its provider interface?
-3. **Shared identity.** One sign-in across all three products (a shared identity service), or separate
-   accounts linked by OAuth? The specs assume linked accounts first, shared identity later.
-4. **Shared design foundation.** Shared tokens and components need a home both repos can use (a private
-   npm package or a third repo). Which do you prefer?
-5. **Findable.** Is there a Findable codebase or API to read? The Findable contract is a proposal written
-   without one.
-6. **Te Puia pilot.** §37 says not to simply reproduce it. Is there pilot material (screens, data, lessons)
-   I should read to avoid repeating it?
-7. **Billing across products.** One Stripe customer and invoice for bundles, or separate billing per
-   product at first?
-8. **Data residency.** Customers are tourism businesses (likely New Zealand and Australia first). Is there
-   a hosting-region requirement for Supabase and R2?
+3. **Findable access.** Findable's repository or API documentation is needed to replace the proposed
+   contract with the real one.
+4. **Te Puia pilot.** The owner will share a link to the pilot. Read it to avoid simply reproducing it
+   (§37).
+5. **Where the accounts service lives.** Proposed: its own repository (`outside-in-accounts` or similar),
+   because all three products depend on it. Alternative: start it inside this repo and move it later.

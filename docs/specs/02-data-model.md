@@ -50,21 +50,25 @@ erDiagram
 
 ### Tenancy and people
 
+Rows marked **mirror** are mastered in the shared accounts service (`13`) and copied here by signed
+events. Command Centre never writes them directly; changes go through the accounts API.
+
 | Table | Key columns | Notes |
 |---|---|---|
-| `organisations` | `name`, `kind` (`business` \| `agency` \| `enterprise`), `region`, `billing_customer_id` | The tenant. Not scoped by `org_id` (it *is* the org) |
-| `org_relationships` | `agency_org_id`, `client_org_id`, `status`, `granted_by` | Agency ↔ client link; see `03` |
+| `organisations` | `name`, `kind` (`business` \| `agency` \| `enterprise`), `region` | **Mirror.** The tenant. Not scoped by `org_id` (it *is* the org). Billing ids live in accounts |
+| `org_relationships` | `agency_org_id`, `client_org_id`, `status`, `granted_by` | **Mirror.** Agency ↔ client link; see `03` |
 | `workspaces` | `org_id`, `name`, `slug`, `industry`, `timezone`, `currency` | One business or business unit |
 | `brands` | `workspace_id`, `name`, `positioning`, `personality`, `voice`, `visual_guidelines jsonb`, `logo_file_id` | Brand guidelines are the shared context sent to Reel Deal and Findable |
 | `locations` | `workspace_id`, `name`, `address jsonb`, `geo point`, `google_place_id` | |
-| `users` | `id = auth.users.id`, `display_name`, `avatar_file_id`, `locale` | Profile only; credentials live in Supabase Auth |
+| `users` | `id` = accounts user id, `display_name`, `avatar_file_id`, `locale` | **Mirror** of the account profile; credentials live only in the accounts service |
 | `user_preferences` | `user_id`, `theme` (`light` \| `dark` \| `system`), `density`, `nav_collapsed` | Keyed by user, not org (§18) |
-| `memberships` | `org_id`, `user_id`, `role_id`, `workspace_ids uuid[] null`, `brand_ids uuid[] null`, `status`, `delegated_from_org_id null` | `null` scope arrays mean all; delegated rows come from an agency |
+| `memberships` | `org_id`, `user_id`, `org_role`, `status`, `delegated_from_org_id null` | **Mirror** of organisation membership and Command Centre `product_access` |
+| `cc_access` | `org_id`, `user_id`, `role_id`, `workspace_ids uuid[] null`, `brand_ids uuid[] null` | Command Centre's own role and scope for a member; `null` arrays mean all. Exists only if the member has Command Centre access |
 | `roles` | `org_id null`, `key`, `name`, `is_system` | System roles have `org_id null`; custom roles in Phase 4 |
 | `permissions` | `key` (e.g. `task.write`), `description`, `risk` | Seeded, not editable by customers |
 | `role_permissions` | `role_id`, `permission_key` | |
 | `teams`, `team_members` | `org_id`, `name`; `team_id`, `user_id` | Ownership and workload views |
-| `invitations` | `org_id`, `email_hash`, `role_id`, `expires_at`, `token_hash` | |
+| `invitations` | — | Handled by the accounts service (one invite covers every product) |
 
 ### Business context
 
@@ -142,7 +146,8 @@ erDiagram
 
 ### Commercial
 
-`subscriptions`, `entitlements`, `usage_events`, `credit_ledger`: defined in `10-billing.md`.
+`subscriptions` and `entitlements` are **mirrors** from the accounts service (`13`). `usage_events` and
+`credit_ledger` are Command Centre's own. All are defined in `10-billing.md`.
 
 ## 3. Enumerations shared across products
 

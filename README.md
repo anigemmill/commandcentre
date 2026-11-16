@@ -1,5 +1,7 @@
 # Command Centre
 
+_Working name. The product does not have a final name yet._
+
 The Outside In's AI-powered business growth and marketing operating system: strategy, intelligence,
 marketing, projects, performance and an AI workforce in one place, connected to **Findable** (search and
 AI discoverability) and **Reel Deal** (AI video production).
@@ -27,3 +29,4 @@ data model, permissions, integration contracts and design system to be agreed be
 10. [Subscriptions and billing](docs/specs/10-billing.md)
 11. [Milestones](docs/specs/11-milestones.md)
 12. [Testing and acceptance](docs/specs/12-testing-and-acceptance.md)
+13. [The Outside In account: shared sign-in and product subscriptions](docs/specs/13-accounts-and-identity.md)

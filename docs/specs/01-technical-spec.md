@@ -37,7 +37,7 @@ Status: proposed. Validates blueprint §26–§28 and fills the gaps it leaves o
 | Jobs | Postgres-backed queue with a separate Node worker | Matches Reel Deal's proven job model (leases, retries, idempotency). Revisit a hosted queue if volume needs it |
 | Scheduling | Cron entries that enqueue jobs | Agent schedules, integration syncs, report generation |
 | AI | Provider interface, Anthropic Claude as first provider | Model chosen per task from a registry in config, not hard-coded |
-| Hosting | Vercel (app), a container host for the worker | Long agent runs and syncs do not fit serverless time limits |
+| Hosting | Vercel (app, functions in `syd1`), a container host for the worker (Sydney) | Long agent runs and syncs do not fit serverless time limits. All data in Sydney: Supabase `ap-southeast-2`, R2 Oceania (decisions, 2026-11-16) |
 | Monitoring | Sentry (errors), structured logs, OpenTelemetry traces | Agent runs traced end to end |
 | Email | Transactional email provider (Resend or Postmark) | Notifications, approvals, invites |
 | Billing | Stripe | See `10-billing.md` |

@@ -24,21 +24,23 @@ to a Findable codebase and needs review by its owners (decisions, open question 
 | Concern | Rule |
 |---|---|
 | Transport | HTTPS, JSON, REST under `/api/v1`. The MCP servers stay for AI clients; product-to-product uses REST |
-| Auth | OAuth 2.1 bearer tokens, one linked organisation per token (`06` §5) |
+| Auth | Accounts-issued bearer tokens (`13` §5): the signed-in user via token exchange, or the organisation's service principal with `on_behalf_of` for background work. Same organisation id in every product |
 | Versioning | `Ecosystem-Version: 2026-11-draft` header; additive changes only within a version |
 | Ids | UUIDs; each side stores the other's id in `external_ref` |
 | Writes | `Idempotency-Key` header required; repeats within 24 h return the first result |
 | Pagination | `?cursor=&limit=` (max 100), response `{ data, next_cursor }` |
 | Errors | `{ error: { code, message, details? } }` with codes `not_found`, `forbidden`, `invalid_input`, `conflict`, `rate_limited`, `capability_unavailable`, `insufficient_credits` (codes match Reel Deal's MCP tool errors) |
 | Events | Webhooks, `POST` to the subscriber, body `{ id, type, occurred_at, org_ref, data }`, header `Ecosystem-Signature: t=<unix>,v1=<hmac-sha256(secret, t + "." + body)>`; reject if older than 5 min; retries with backoff for 24 h; receivers dedupe on `id` |
-| Rate limits | 600 requests/min per linked org; `429` with `Retry-After` |
+| Rate limits | 600 requests/min per organisation; `429` with `Retry-After` |
 
 ## 3. Reel Deal ↔ Command Centre
 
-### 3.1 Linking
+### 3.1 Connection
 
-`GET /api/v1/organisation` (Reel Deal) returns `{ id, name, plan, credit_balances }` for the token's
-organisation. Command Centre stores it on `integrations` (provider `reel_deal`).
+There is no linking step. When an organisation subscribes to both products (shared account, `13`), the
+exchange is available automatically, using the same organisation id on both sides. Command Centre shows
+Creative Studio as active once its subscription mirror says Reel Deal is on. Admins can switch the data
+exchange off in either product.
 
 ### 3.2 Command Centre → Reel Deal (Reel Deal exposes)
 
@@ -111,7 +113,8 @@ business context.
 ### 3.5 Gaps Reel Deal must close (Phase 3 of Command Centre)
 
 1. A REST surface over the existing services (today they are reachable through MCP and the app only).
-2. OAuth authorisation server live (verifier exists; Supabase OAuth server not yet connected).
+2. Accept shared-account tokens and mirror organisations and memberships from accounts (`13` §7). Its
+   existing JWKS verifier for MCP OAuth is the starting point.
 3. Outgoing webhooks (none exist today).
 4. `cc_ref` and `deadline` on projects; storyboard decision endpoint.
 5. Performance data for videos (Reel Deal does not track post-publish performance; Command Centre gets

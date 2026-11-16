@@ -10,7 +10,7 @@ Three layers, so the three products share foundations without sharing a palette:
 
 | Layer | Prefix | Owned by | Contains |
 |---|---|---|---|
-| Foundation | `--oi-*` | Shared package (open question 4) | Spacing, type scale, font stacks, radius, shadows, motion, z-index, breakpoints |
+| Foundation | `--oi-*` | This repo first (`packages/foundation/`), a private npm package once a second product adopts it | Spacing, type scale, font stacks, radius, shadows, motion, z-index, breakpoints |
 | Product theme | `--cc-*` (Reel Deal `--rd-*`, Findable `--fd-*`) | Each product | Brand colours, light and dark sets, chart palette |
 | Semantic | `--color-*`, `--chart-*` | Each product maps theme → semantic | `--color-bg`, `--color-surface`, `--color-text`, `--color-action`, `--color-border-control`… |
 
