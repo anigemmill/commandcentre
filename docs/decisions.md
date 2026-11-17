@@ -127,6 +127,14 @@ Full review: `docs/pilot-review.md`.
 - **Not in M1, deliberately:** error monitoring (needs a Sentry account and DSN; added at first
   deployment) and hosted Supabase/Vercel projects (created at first deployment, in Sydney).
 
+## 2026-11-17: shared identity mechanism (proposed, awaiting approval)
+
+- Command Centre signs people in only through the account service (`anigemmill/outsideinprojects`):
+  it is an OAuth 2.1 / OpenID Connect client of the account service's Supabase Auth, verifies tokens
+  offline with its JWKS, accepts exactly one issuer per environment, and keeps its own database. Its own
+  Supabase project's Auth stays locked. Design: `outsideinprojects/docs/identity-architecture.md`;
+  variables and secrets: `outsideinprojects/docs/environments.md`.
+
 ## Open questions for the owner
 
 None open. Next decisions come with the first build milestone.
