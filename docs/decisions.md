@@ -51,8 +51,36 @@ means the owner has confirmed it.
   (`packages/foundation/`). Extract them into a private npm package on GitHub Packages once a second
   product (Reel Deal or Findable) adopts them. Reason: one product's real needs shape the foundation
   before it is shared, and nothing has to be published or versioned until there is a second consumer.
-- **Findable is live** (§10). Its contract in `docs/specs/07-integration-contracts.md` §4 is still a
-  proposal until it is checked against Findable's real API.
+- **Findable is live** (§10). See the 2026-11-17 entries below.
+
+## 2026-11-17: pilot and Findable review
+
+Full review: `docs/pilot-review.md`.
+
+- **Findable and the Te Puia pilot are one codebase** (`anigemmill/Tourism-AI-Growth-Platform`), deployed
+  twice: `PRODUCT_BRAND=outside-in` for the pilot, `PRODUCT_BRAND=findable` for Findable. It is
+  single-tenant, has its own password login, test-mode Stripe billing per business and no external API.
+- **Findable contract rewritten from the real data model** (§10, proposed). `docs/specs/07` §4 maps
+  every endpoint to an existing Findable table. Rule: Command Centre receives exactly what the business
+  may see in its own Findable portal; staff drafts, fixtures and illustrative data never leave
+  Findable. Findable must add an external API, webhooks and the move to the shared account.
+- **Boundary with the pilot** (§37, proposed). The pilot's assessments, opportunity register, projects
+  and tasks, signals and briefs, experiments and agent library are Command Centre's territory and are
+  rebuilt here as a self-serve, multi-tenant product, not copied. AI visibility, citations, answer
+  competitors, website assessment, question coverage, content briefs and Search Console stay in
+  Findable. Programme, cohort, collective, commercial and destination modules are pilot delivery or
+  internal tools and are not part of Command Centre.
+- **Patterns adopted from the pilot** (proposed): typed claims alongside the evidence classes, human
+  approval before AI output reaches a client, nothing shown as connected without a tested sync,
+  flagged demo and fixture data, consent-gated visibility levels, the cultural authority gate,
+  experiment threshold rules, and Findable's billing rules. Added to specs 02, 05 and 13.
+- **One Google connection per business** (§13, proposed). Findable already connects GA4 and Search
+  Console per business and is going through Google's OAuth verification. Command Centre must not ask
+  the same business to connect Google a second time or pass Google verification again. Proposal:
+  move the Google connection into the shared account so one consent serves both products. Until then,
+  Command Centre reads Search Console through Findable and builds no Search Console connector of its own.
+- **Platform staff** (§6, proposed). The Outside In's own people are platform staff in accounts with
+  audited, time-limited support access, not members of customer organisations (spec 13).
 
 ## Open questions for the owner
 
@@ -60,9 +88,12 @@ means the owner has confirmed it.
    name. Is either final?
 2. **AI provider.** The blueprint says Claude initially. Reel Deal's live AI is currently on OpenAI. Should
    Reel Deal move to Claude for consistency, or stay as is behind its provider interface?
-3. **Findable access.** Findable's repository or API documentation is needed to replace the proposed
-   contract with the real one.
-4. **Te Puia pilot.** The owner will share a link to the pilot. Read it to avoid simply reproducing it
-   (§37).
-5. **Where the accounts service lives.** Proposed: its own repository (`outside-in-accounts` or similar),
+3. **Where the accounts service lives.** Proposed: its own repository (`outside-in-accounts` or similar),
    because all three products depend on it. Alternative: start it inside this repo and move it later.
+4. **Shared typography.** The blueprint lists Space Grotesk, Inter and Geist Mono as shared. Reel Deal
+   uses those; Findable uses Inter, Inter Tight and JetBrains Mono. Should all three share the same
+   fonts, or only the type principles (scale, hierarchy, tabular numbers)? The specs assume principles
+   only, so Findable keeps its fonts.
+5. **When Findable moves to the shared account.** Findable has live businesses, and Te Puia's pilot is
+   under way. Proposed: not before the pilot ends, and only after the accounts service is built and
+   tested with Command Centre.

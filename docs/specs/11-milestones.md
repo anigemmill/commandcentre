@@ -20,7 +20,7 @@ starts until the previous one is accepted. Phases are the blueprint's (§29–§
 | M5 | Projects and tasks | Projects, milestones, tasks, dependencies, recurring, my tasks, workload, risk flags | M07 requirements pass |
 | M6 | Strategy and objectives | Plans, SWOT, objectives, KPIs, progress view, version compare | J3 works without AI |
 | M7 | Knowledge hub | Upload, extraction, tagging, search (full-text first; embeddings in M9) | Documents isolated per org in tests |
-| M8 | Home and basic reporting | Home dashboard (`04` §6), KPI tiles, manual metrics, GA4 + Search Console connectors | Home shows only real data with sources |
+| M8 | Home and basic reporting | Home dashboard (`04` §6), KPI tiles, manual metrics, GA4 connector through the shared Google connection | Home shows only real data with sources |
 
 ## Phase 2 · AI intelligence and workforce
 
@@ -49,6 +49,7 @@ SSO · M20 Forecasting and attribution · M21 White-label · M22 Workflow automa
 
 - Reel Deal: move onto the shared account (`13` §7), REST surface, webhooks, `cc_ref`/`deadline`, storyboard decision endpoint
   (before M14).
-- Findable: API per `07` §4 or a counter-proposal (before M15).
+- Findable: move onto the shared account and organisations, an external API and webhooks (`07` §4.5),
+  before M15. Shared Google connection (decisions) before M8 if Findable's connection is reused.
 - Shared foundation package for tokens and components (before M3 ideally, or M3 builds locally and
   extracts later).

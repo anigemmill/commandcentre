@@ -117,6 +117,28 @@ account means:
 This is Reel Deal work, scheduled with Command Centre's M2 (`11`). Nothing in the Reel Deal repo is
 changed by this document.
 
+### Findable (larger change)
+
+Findable (`anigemmill/Tourism-AI-Growth-Platform`, `PRODUCT_BRAND=findable`) is single-tenant, uses its
+own scrypt password sessions, and mixes The Outside In staff (FOUNDER, ADMIN) and business users
+(OPERATOR) in one `User` table. Moving it means:
+
+1. Each `Operator` (business) becomes an organisation in accounts; `UserBusiness` links become
+   memberships; `isPrimaryContact` becomes the organisation's billing contact.
+2. FOUNDER and ADMIN become **platform staff** in accounts (below), not members of customer
+   organisations.
+3. Its Stripe billing (test mode, per business) moves to accounts, keeping its decided rules
+   (`docs/pilot-review.md` §3.9). Its plans and allowances stay in Findable's config.
+4. Its pilot deployment (`PRODUCT_BRAND=outside-in`) can stay on its own login until the pilot ends.
+
+### Platform staff and support access
+
+The Outside In's own people need to help customers in every product. Accounts holds a separate
+**platform staff** list (not an organisation role). A staff member opens a customer's data only through
+a time-limited support session that is reason-stated, visible to the customer and audited in both
+accounts and the product (Findable already records `SupportView`). Staff never appear in a customer's
+member list.
+
 ## 8. Risks
 
 | Risk | Mitigation |

@@ -112,7 +112,7 @@ events. Command Centre never writes them directly; changes go through the accoun
 
 | Table | Key columns |
 |---|---|
-| `intelligence_records` | `workspace_id`, `title`, `finding`, `source_type` (§8 list), `source_ref jsonb`, `observed_at`, `evidence_class`, `confidence numeric null`, `priority`, `impact`, `recommendation`, `owner_id`, `stage` (`finding` → `assessment` → `recommendation` → `review` → `actioned` → `measured` → `learned`) |
+| `intelligence_records` | `workspace_id`, `title`, `finding`, `source_type` (§8 list), `source_ref jsonb`, `observed_at`, `evidence_class`, `claim_type` (`fact` \| `observation` \| `inference` \| `hypothesis` \| `recommendation`, adopted from the pilot), `source_claim_type`, `confidence numeric null`, `cultural_review` (`not_needed` \| `required` \| `approved`), `priority`, `impact`, `recommendation`, `owner_id`, `stage` (`finding` → `assessment` → `recommendation` → `review` → `actioned` → `measured` → `learned`) |
 | `documents` | `workspace_id`, `kind` (§13 list), `title`, `file_id`, `text_extracted`, `approved_messaging bool` |
 | `document_chunks` | `document_id`, `org_id`, `workspace_id`, `content`, `embedding vector(1024)`; retrieval runs under RLS (`08`) |
 | `files` | `org_id`, `storage_key`, `mime`, `bytes`, `sha256` | Private R2 objects |

@@ -2,13 +2,15 @@
 
 Status: proposed, version `2026-11-draft`. The Reel Deal contract maps to services that **already exist**
 in the Reel Deal repo (`anigemmill/reeldeal`, `src/server/services/`, exposed today through its MCP
-server). Gaps that Reel Deal must add are listed in §3.5. The Findable contract is written without access
-to a Findable codebase and needs review by its owners (decisions, open question 5).
+server). Gaps that Reel Deal must add are listed in §3.5. The Findable contract maps to Findable's real
+data model (`anigemmill/Tourism-AI-Growth-Platform`, Prisma schema at `b283f7b`); Findable has no
+external API yet, so every Findable endpoint here is new work for Findable (§4.5).
 
 ## 1. Principles
 
 1. **System of record stays put.** Reel Deal owns projects, media, storyboards, renders and credits.
-   Findable owns crawls, rankings, visibility scores and audits. Command Centre stores references
+   Findable owns AI visibility runs and answers, citations, competitors found in answers, website
+   assessments, question coverage, content briefs and search data. Command Centre stores references
    (`external_ref`) and summaries, plus its own records that point at them.
 2. **Shared context flows out of Command Centre.** Business profile, brands, audiences, competitors and
    campaigns are mastered in Command Centre when connected, and read by the others with
@@ -122,28 +124,69 @@ business context.
 
 ## 4. Findable ↔ Command Centre
 
+Findable's unit is the business (`Operator`). Under the shared account (`13`) a business is an
+organisation (or, for multi-location groups, a workspace; Findable's multi-location reporting is
+planned, not built).
+
+**Rule for what flows:** Command Centre receives exactly what the business itself may see in its
+Findable portal: shared reports, approved briefs, results the business has consent for. Staff-only
+drafts, internal notes, fixture runs (`isFixture`) and illustrative records never leave Findable.
+
 ### 4.1 Command Centre → Findable (Findable exposes)
 
-| Endpoint | Returns |
-|---|---|
-| `GET /visibility?period=` | Scores for SEO, AEO and GEO/AI search, with method, period and evidence class |
-| `GET /findings?since=` | Search findings: issue, severity, affected URLs, evidence, detected_at |
-| `GET /opportunities` | Keyword and content opportunities: query, intent, volume (`platform_reported` or `estimated`), difficulty, current position |
-| `GET /competitors` | Competitor visibility per competitor domain |
-| `GET /recommendations` | Website optimisation recommendations with expected impact and effort |
-| `PATCH /recommendations/{id}` | Status from Command Centre (`accepted`, `in_progress`, `done`, `dismissed`) |
-| `GET /performance?metric=&period=` | Search performance time series |
-| `POST /audits` | Request a new audit (scope `fd:write`) |
+| Endpoint | Built from (Findable model) | Returns |
+|---|---|---|
+| `GET /visibility/summary?period=` | `VisibilityRun`, `VisibilityAnswer` | Per engine (ChatGPT, Perplexity, Google AI Overviews): questions asked, valid answers, mention rate, recommendation rate, average mention position, sentiment split, citation rate, with run dates and the engines' validation status |
+| `GET /visibility/answers?since=` | `VisibilityAnswer`, `AnswerCitation` | Answer-level results: question text, engine, mentioned, recommended, position, sentiment, accuracy, cited URLs (response text only where the provider's terms allow) |
+| `GET /competitors` | `Competitor` | Name, domains, aliases, status (confirmed or suggested), how it was found, observed evidence counts |
+| `GET /coverage` | `QuestionCoverage` | Per traveller question: covered / partial / missing, best page, missing terms |
+| `GET /recommendations` | `WebsiteAssessmentResult` (issues with a recommendation) | Title, why, action, pages, impact, effort, confidence, priority score, rank, recheck status, linked task |
+| `PATCH /recommendations/{id}` | same | Status from Command Centre (`accepted`, `in_progress`, `done`, `dismissed`) and the Command Centre task reference |
+| `GET /content-briefs?status=approved` | `ContentBrief` | Approved briefs: type, title, why now, audience, key points, search intent, questions, outline, relevant pages |
+| `GET /reports?status=shared` | `IntelligenceReport` | Shared reports: title, period, snapshot summary, PDF link (signed, short-lived) |
+| `GET /search/queries?period=` | `SearchQueryStat` | Search Console queries: clicks, impressions, CTR, position, page |
+| `GET /analytics/daily?period=` | `AnalyticsDaily` | GA4 sessions, engaged sessions and key events by landing page, channel and source, including AI referrals |
+| `GET /plan` | `Subscription` + entitlements | Plan, analyses used and left this month, competitor limit (display only) |
 
 ### 4.2 Findable → Command Centre (events)
 
-`finding.created`, `opportunity.created`, `recommendation.created`, `visibility.updated`,
-`audit.completed`. Command Centre turns each into an intelligence record (`source_type: findable`,
-`evidence_class` as sent) or a performance metric.
+| Event | Command Centre does |
+|---|---|
+| `visibility.run_completed` | Records metrics (`platform_reported` for provider answers; mention and citation rates as `measured` counts over the sample, with sample size shown) |
+| `competitor.confirmed` | Offers to add the competitor to the workspace's competitor list |
+| `recommendation.created` | Creates an intelligence record (`source_type: findable`) |
+| `content_brief.approved` | Offers it as a content item in the content calendar |
+| `report.shared` | Links the report on Discoverability and in the next monthly review |
+| `analytics.synced`, `search.synced` | Refreshes the performance metrics it reads |
 
 ### 4.3 Findable reads from Command Centre
 
-`GET /api/v1/context`: website, locations, offerings, audiences, competitors, campaign landing pages.
+`GET /api/v1/context`: business description, offerings (as Findable `products`), locations, audiences,
+competitors and campaign landing pages. Findable keeps its own search-specific profile fields
+(`brandNames`, `brandDomains`, `searchLocation`, traveller questions, engines, cadence).
+
+### 4.4 Evidence mapping
+
+Findable is more precise than the blueprint's four classes. Command Centre stores both: the blueprint
+class (required) and Findable's original label (`source_claim_type`, `source_confidence`).
+
+| Findable label | Command Centre `evidence_class` |
+|---|---|
+| GA4 / Search Console figures | `platform_reported` |
+| Counts over stored answers (mention rate, citation rate) | `measured` (with sample size and period) |
+| Provider answer content (what an engine said) | `platform_reported` |
+| `Confidence.MODELLED`, `ClaimType.INFERENCE`, `HYPOTHESIS` | `estimated` |
+| Rules or AI-generated recommendations (`RECOMMENDATION`, briefs) | `ai_interpretation` |
+| `EvidenceKind.OPERATOR_REPORTED` | `estimated`, labelled "reported by the business" |
+
+### 4.5 Work Findable must do
+
+1. An external API for §4.1 (today there are only internal route handlers), scoped by organisation and
+   respecting what the business may see.
+2. Outgoing webhooks for §4.2.
+3. Move onto the shared account (`13` §7), including turning its single-tenant model into organisations.
+4. When both products are subscribed, let Command Centre own tasks: Findable's recommendation → task
+   link (`WebsiteAssessmentResult.taskId`) points to the Command Centre task instead of a Findable task.
 
 ## 5. Command Centre's own ecosystem endpoints
 

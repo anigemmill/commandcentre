@@ -13,6 +13,7 @@ data model, permissions, integration contracts and design system to be agreed be
 |---|---|
 | [`docs/blueprint.md`](docs/blueprint.md) | Master requirements, architecture and design system (v1.1) |
 | [`docs/decisions.md`](docs/decisions.md) | Decisions since the blueprint and open questions |
+| [`docs/pilot-review.md`](docs/pilot-review.md) | What the Te Puia pilot and Findable are, what to keep, what not to reproduce |
 | [`docs/specs/`](docs/specs/) | The twelve pre-implementation specifications (blueprint section 37) |
 
 ## Specifications

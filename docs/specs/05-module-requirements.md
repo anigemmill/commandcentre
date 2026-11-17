@@ -30,6 +30,10 @@ acceptance.
 - M03.5 (P2) AI draft of any plan from profile + intelligence, labelled as a draft until approved.
 - M03.6 Version history and compare on plans.
 
+- M03.7 (P2) Experiments (from the pilot): hypothesis, baseline period, metric, minimum acceptable and
+  target set before start; limitations required to complete; threshold edits after start audited;
+  verdict shown with caveats.
+
 ## M04 · Marketing
 - M04.1 (P1) Campaigns: name, goal, objective, audiences, channels, dates, budget, status.
 - M04.2 (P2) Content calendar (month/week/list), content bank, items by channel and format.
@@ -42,8 +46,9 @@ acceptance.
 
 ## M05 · Discoverability – Findable (Phase 3)
 - M05.1 Not connected: explain Findable, link to activate. No placeholder scores.
-- M05.2 Connected: overview of visibility (SEO, AEO, GEO) as reported by Findable, with Findable's
-  evidence classes and dates.
+- M05.2 Connected: AI visibility per engine (mention, recommendation and citation rates, position,
+  sentiment), competitors, question coverage and search performance, as reported by Findable (`07` §4),
+  with sample sizes, dates and evidence classes.
 - M05.3 Opportunities and recommendations listed; "accept" creates a Command Centre task linked to the
   Findable record; status changes sync back.
 - M05.4 Deep links into Findable for any analysis. No SEO analysis runs inside Command Centre.
@@ -79,7 +84,8 @@ acceptance.
 ## M09 · Performance and Insights
 - M09.1 (P1) Basic reporting: KPIs and project/task metrics, manual metric entry (`measured` only if
   the user attests the source; otherwise `estimated`).
-- M09.2 (P1) GA4 and Search Console connectors (first two integrations).
+- M09.2 (P1) GA4 connector (first integration), using the one Google connection per business described
+  in `decisions.md`. Search Console data comes from Findable, not a second Command Centre connector.
 - M09.3 (P3) Unified reporting across channels, Findable and Reel Deal.
 - M09.4 (P3) Monthly/quarterly/annual review generation and PDF export.
 - M09.5 (P4) Attribution and forecasting, with methods shown and outputs marked `estimated`.
@@ -97,6 +103,16 @@ acceptance.
   writes.
 - M11.3 Can call specialist agents; shows which agent did what.
 - M11.4 Clearly marks interpretation versus measured data.
+
+## Cross-cutting (from the pilot, `docs/pilot-review.md` §3)
+- X.1 (P1) Cultural authority: each workspace can record who holds authority over its cultural content
+  and what must not go into AI tools. Records flagged for cultural review cannot be shared, published or
+  sent to another product until that authority approves. Agents never receive content marked
+  "not for AI tools".
+- X.2 (P1) Demo, fixture and illustrative data flagged in the schema and badged wherever shown; never
+  counted in reports.
+- X.3 (P2) Visibility levels and consent on intelligence and learnings before anything is shared
+  outside the workspace (e.g. an agency's cross-client benchmarks).
 
 ## Administration
 - A.1 (P1) Organisation, workspaces, brands, users, invitations, roles, teams.
