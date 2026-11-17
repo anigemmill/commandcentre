@@ -114,6 +114,19 @@ Full review: `docs/pilot-review.md`.
   Te Puia, keeping the old sign-in available for a week as a fallback. The pilot deployment
   (`PRODUCT_BRAND=outside-in`) stays on its own sign-in until the pilot ends.
 
+## 2026-11-17: milestone M1 built
+
+- **Stack versions** match Reel Deal's tested set: Next.js 16.4.6, React 19.3, Tailwind 4.3.3, Vitest 5,
+  zod 4, `postgres` (porsager) for SQL. One stack across products makes shared components possible.
+- **Local database is plain Postgres plus a Supabase compatibility file** (`supabase/local/`), as in
+  Reel Deal, because Docker isn't available in the build environment. The migrations are written for
+  Supabase and never apply the compatibility file to a real Supabase project.
+- **Deny by default in the database.** The first migration removes Supabase's default grants to `anon`
+  and `authenticated` on new tables, and adds `app.tables_missing_rls`; tests and CI fail if any public
+  table lacks RLS or a policy. Proven by tests against a real Postgres.
+- **Not in M1, deliberately:** error monitoring (needs a Sentry account and DSN; added at first
+  deployment) and hosted Supabase/Vercel projects (created at first deployment, in Sydney).
+
 ## Open questions for the owner
 
 None open. Next decisions come with the first build milestone.

@@ -12,7 +12,7 @@ starts until the previous one is accepted. Phases are the blueprint's (§29–§
 
 | # | Milestone | Includes | Exit criteria |
 |---|---|---|---|
-| M1 | Foundations | Next.js scaffold, TypeScript strict, lint, CI, Supabase local stack, migration tooling, env checks, Sentry | CI green on an empty app; local stack runs from one command |
+| M1 ✅ (17 Nov 2026) | Foundations | Next.js scaffold, TypeScript strict, lint, CI, Supabase local stack, migration tooling, env checks, Sentry | CI green on an empty app; local stack runs from one command |
 | M2a | Accounts service (`13`) | Shared sign-in (Supabase Auth), organisations, memberships, product access, invitations, token issuing and JWKS, outbox events, product switcher component, subscriptions assigned by staff (Stripe checkout comes in M17) | A user signs up once and reaches Command Centre without a second sign-in |
 | M2b | Tenancy in Command Centre | Token verification, account mirrors, workspaces, brands, Command Centre roles and permissions, `has_permission`, RLS, audit events, record versions | Isolation suite (`03` §7) passes for all tables; removing a member in accounts blocks them in Command Centre within a minute |
 | M3 | Design system | Tokens (`09`), primitives, shell (nav, top bar, side panel), `/design-system` page, light/dark/system theme persisted | axe clean in both modes; keyboard walkthrough of shell |

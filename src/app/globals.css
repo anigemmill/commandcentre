@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+/* Placeholder theme until the design-system milestone. Colours are tokens, never raw hex in components. */
+:root {
+  --color-bg: #F4F1E9;
+  --color-text: #252B29;
+  --color-text-muted: #5C6460;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #141917;
+    --color-text: #EDE9DF;
+    --color-text-muted: #B4B9B1;
+  }
+}
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: system-ui, sans-serif;
+}

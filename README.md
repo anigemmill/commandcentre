@@ -6,8 +6,9 @@ The Outside In's AI-powered business growth and marketing operating system: stra
 marketing, projects, performance and an AI workforce in one place, connected to **Findable** (search and
 AI discoverability) and **Reel Deal** (AI video production).
 
-**Status: specification.** There is no application code yet. The blueprint requires the architecture,
-data model, permissions, integration contracts and design system to be agreed before building.
+**Status: foundations (milestone M1).** The app skeleton, environment checks, database migrations with
+a row-level-security guard, a local database and CI are in place. No product features yet. Running it:
+[`docs/development.md`](docs/development.md).
 
 | Document | What it is |
 |---|---|

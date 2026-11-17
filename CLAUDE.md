@@ -17,8 +17,10 @@ layer of The Outside In ecosystem, alongside **Findable** (discoverability) and 
 
 ## Status
 
-Specification stage. No application code yet. Blueprint section 37: establish architecture, data
-relationships, design system and shared foundations first. Do not start with disconnected screens.
+Milestone M1 (foundations) built: Next.js app, environment checks, migrations with the RLS guard, local
+database, CI. No product features yet. Blueprint section 37: establish architecture, data relationships,
+design system and shared foundations first. Do not start with disconnected screens.
+How to run and check everything: `docs/development.md`.
 
 ## Stack (blueprint section 26)
 
