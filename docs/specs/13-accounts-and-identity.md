@@ -1,5 +1,8 @@
 # 13 · The Outside In account: shared identity and product subscriptions
 
+> **The master copy now lives in `anigemmill/outsideinprojects` (`docs/spec.md`).** This copy is kept
+> for reference and may fall behind; change the master, not this file.
+
 Status: **decided by the owner (2026-11-16), design proposed.** One account signs a person in to every
 product. An organisation adds products by subscribing to them. This replaces the earlier proposal of
 separate accounts linked by OAuth.

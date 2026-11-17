@@ -105,8 +105,8 @@ Full review: `docs/pilot-review.md`.
   (Command Centre: Space Grotesk, Inter, Geist Mono; Reel Deal: the same plus Instrument Serif; Findable:
   Inter, Inter Tight, JetBrains Mono). The shared foundation covers the type scale, weights, line heights,
   tabular numbers and hierarchy rules, not the families.
-- **Accounts service gets its own repository** (decided). The owner will create it; suggested name
-  `outside-in-accounts`.
+- **Accounts service gets its own repository** (decided): `anigemmill/outsideinprojects`. The master copy
+  of spec 13 moved there as `docs/spec.md`, with a build plan in `docs/plan.md`.
 - **Findable moves to the shared account early, not after the pilot** (proposed, revised). Findable has
   one live business, so now is the cheapest and safest time to move it: one account to migrate and one
   business to agree a date with. Order: build the accounts service and connect Command Centre to it;
