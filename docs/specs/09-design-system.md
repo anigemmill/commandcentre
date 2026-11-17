@@ -10,7 +10,7 @@ Three layers, so the three products share foundations without sharing a palette:
 
 | Layer | Prefix | Owned by | Contains |
 |---|---|---|---|
-| Foundation | `--oi-*` | This repo first (`packages/foundation/`), a private npm package once a second product adopts it | Spacing, type scale, font stacks, radius, shadows, motion, z-index, breakpoints |
+| Foundation | `--oi-*` (type scale and rules, not font families) | This repo first (`packages/foundation/`), a private npm package once a second product adopts it | Spacing, type scale, font stacks, radius, shadows, motion, z-index, breakpoints |
 | Product theme | `--cc-*` (Reel Deal `--rd-*`, Findable `--fd-*`) | Each product | Brand colours, light and dark sets, chart palette |
 | Semantic | `--color-*`, `--chart-*` | Each product maps theme → semantic | `--color-bg`, `--color-surface`, `--color-text`, `--color-action`, `--color-border-control`… |
 
@@ -105,7 +105,7 @@ text badge on every chart and tile, never by colour alone.
 
 | Group | Tokens |
 |---|---|
-| Type families | `--oi-font-display` Space Grotesk · `--oi-font-body` Inter · `--oi-font-mono` Geist Mono (§19). Reel Deal additionally uses Instrument Serif italic; Command Centre does not (no decorative type in operational screens) |
+| Type families | **Per product, not shared** (decisions, 2026-11-17). Command Centre: `--cc-font-display` Space Grotesk · `--cc-font-body` Inter · `--cc-font-mono` Geist Mono. Reel Deal and Findable keep their own. No decorative type in Command Centre's operational screens |
 | Type scale (app) | 12 / 13 / 14 (body) / 16 / 18 / 22 / 28 / 36 px; line-height 1.5 body, 1.2 headings; tabular numerals (`font-variant-numeric: tabular-nums`) for all data |
 | Weights | 400, 500, 600 (headings max 600, "strong but restrained") |
 | Spacing | 4 px base: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80 |

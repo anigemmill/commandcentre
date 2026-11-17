@@ -82,18 +82,38 @@ Full review: `docs/pilot-review.md`.
 - **Platform staff** (§6, proposed). The Outside In's own people are platform staff in accounts with
   audited, time-limited support access, not members of customer organisations (spec 13).
 
+## 2026-11-17: owner answers (second round)
+
+- **Reel Deal is the name** (decided). The video product is "Reel Deal". The Reel Deal repo still calls
+  it "Reeldeal" as a working name; update that repo's docs when it is next worked on.
+- **Reel Deal moves from OpenAI to Claude** (decided on the owner's delegation). Reasons:
+  1. *One provider for the ecosystem's own AI.* Command Centre is specified on Claude (§26) and Findable
+     already uses Claude for its own writing (`src/lib/llm/anthropic.ts`). One provider means one bill,
+     one set of keys and usage limits, one data-processing agreement and one privacy disclosure, which
+     is what §27's "central model management" asks for.
+  2. *Small, contained change.* Reel Deal's AI already sits behind a provider interface
+     (`src/server/ai/provider.ts`) with one OpenAI implementation and a test fixture. A Claude provider
+     is added beside it; the schemas and validation of briefs, concepts and storyboards stay as they are.
+  3. *Measured, not assumed.* The same set of real briefs runs through both providers before switching,
+     comparing storyboard quality, adherence to the footage actually available, and cost per video.
+     OpenAI stays available as a fallback until the comparison is accepted.
+  4. *Cost stays small either way.* A brief, concepts and storyboard are a few thousand tokens per
+     video, so any current Claude model costs cents per video. Model choice is made from the comparison.
+  Not affected: Findable keeps calling ChatGPT, Perplexity and Google, because those engines are what it
+  measures.
+- **Fonts stay separate, rules are shared** (§19, §22, decided). Each product keeps its own typefaces
+  (Command Centre: Space Grotesk, Inter, Geist Mono; Reel Deal: the same plus Instrument Serif; Findable:
+  Inter, Inter Tight, JetBrains Mono). The shared foundation covers the type scale, weights, line heights,
+  tabular numbers and hierarchy rules, not the families.
+- **Accounts service gets its own repository** (decided). The owner will create it; suggested name
+  `outside-in-accounts`.
+- **Findable moves to the shared account early, not after the pilot** (proposed, revised). Findable has
+  one live business, so now is the cheapest and safest time to move it: one account to migrate and one
+  business to agree a date with. Order: build the accounts service and connect Command Centre to it;
+  move a staging copy of Findable onto it and test; then switch production at a quiet time agreed with
+  Te Puia, keeping the old sign-in available for a week as a fallback. The pilot deployment
+  (`PRODUCT_BRAND=outside-in`) stays on its own sign-in until the pilot ends.
+
 ## Open questions for the owner
 
-1. **Reel Deal's name.** The blueprint writes "Reel Deal"; its repo uses "Reeldeal", also as a working
-   name. Is either final?
-2. **AI provider.** The blueprint says Claude initially. Reel Deal's live AI is currently on OpenAI. Should
-   Reel Deal move to Claude for consistency, or stay as is behind its provider interface?
-3. **Where the accounts service lives.** Proposed: its own repository (`outside-in-accounts` or similar),
-   because all three products depend on it. Alternative: start it inside this repo and move it later.
-4. **Shared typography.** The blueprint lists Space Grotesk, Inter and Geist Mono as shared. Reel Deal
-   uses those; Findable uses Inter, Inter Tight and JetBrains Mono. Should all three share the same
-   fonts, or only the type principles (scale, hierarchy, tabular numbers)? The specs assume principles
-   only, so Findable keeps its fonts.
-5. **When Findable moves to the shared account.** Findable has live businesses, and Te Puia's pilot is
-   under way. Proposed: not before the pilot ends, and only after the accounts service is built and
-   tested with Command Centre.
+None open. Next decisions come with the first build milestone.
