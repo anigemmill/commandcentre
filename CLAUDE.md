@@ -44,8 +44,10 @@ Vercel, Claude as the first AI provider behind a provider interface.
 - Every metric and intelligence record carries source, period/date and an evidence classification
   (`measured`, `platform_reported`, `estimated`, `ai_interpretation`). Never show AI output as measured.
 - No fake functionality presented as real. Mocked features are labelled in code and UI.
-- Use design tokens (`tokens/`, once created), never raw hex in components. Respect the contrast
-  adjustments in `docs/specs/09-design-system.md`; some blueprint colours fail as text.
+- Use design tokens, never raw hex in components: semantic utilities (`bg-surface`, `text-ink`,
+  `border-control` …) from `src/app/globals.css`, on `tokens/command-centre.css` and
+  `packages/foundation/tokens.css`. `npm run check:tokens` enforces it. Reference: `docs/design-system.md`.
+  Respect the contrast adjustments in `docs/specs/09-design-system.md`; some blueprint colours fail as text.
 - Accessibility: WCAG 2.2 AA, real buttons and links, labelled inputs, keyboard paths, reduced motion.
 - Plans, prices and limits live in config, never hard-coded.
 - Small, phased changes. Explain any change to architecture in `docs/decisions.md`.

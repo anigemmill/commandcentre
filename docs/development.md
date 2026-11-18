@@ -30,7 +30,8 @@ The app runs on http://localhost:3000. `/api/health` reports whether the databas
 
 | Command | What it does |
 |---|---|
-| `npm run check` | Migration safety, type check, lint and unit tests (what CI runs, minus the build) |
+| `npm run check` | Migration safety, token guard, type check, lint and unit tests (what CI runs, minus the build) |
+| `npm run check:tokens` | Fails on raw colours or direct theme tokens in `src/` (use semantic utilities; `docs/design-system.md`) |
 | `npm run test:db` | Database tests against the local database (starts it if needed via `npm run setup` first) |
 | `npm run check:env` | Validates the current environment the way the server does at start-up |
 | `npm run build` | Production build |
@@ -47,6 +48,13 @@ Postgres 16 service, on every push and pull request.
   the database tests fail if it returns anything.
 - New tables get **no** privileges for `anon` or `authenticated` by default (the foundation migration
   removes Supabase's broad defaults). Grant what a table needs explicitly.
+- `npm run db:migrate` applies `supabase/local/` only to a database on this machine. For any other
+  non-Supabase database it refuses unless `ALLOW_LOCAL_SHIM=true` is set deliberately.
+
+## Start-up checks
+
+A server validates its environment when it starts (`src/instrumentation.ts`). In production, missing or
+local values are logged at start-up and no route is served, rather than failing request by request.
 
 ## Not set up yet
 

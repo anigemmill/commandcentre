@@ -1,20 +1,88 @@
 @import "tailwindcss";
+@import "../../packages/foundation/tokens.css";
+@import "../../tokens/command-centre.css";
 
-/* Placeholder theme until the design-system milestone. Colours are tokens, never raw hex in components. */
-:root {
-  --color-bg: #F4F1E9;
-  --color-text: #252B29;
-  --color-text-muted: #5C6460;
+/*
+  Semantic layer: Tailwind theme variables mapped onto the Command Centre theme (--cc-*), which
+  switches values between light and dark. Components use these utilities (bg-surface, text-ink,
+  text-muted, border-control, bg-action text-on-action, rounded-md …), never raw hex or brand
+  tokens. "inline" makes utilities emit var(--cc-*) directly, so a mode change re-themes them.
+  Reference: docs/design-system.md.
+*/
+@theme inline {
+  --color-bg: var(--cc-bg);
+  --color-surface: var(--cc-surface);
+  --color-surface-muted: var(--cc-surface-muted);
+  --color-surface-raised: var(--cc-surface-raised);
+  --color-ink: var(--cc-text);
+  --color-muted: var(--cc-text-muted);
+  --color-accent-ink: var(--cc-text-accent);
+  --color-action: var(--cc-action);
+  --color-action-hover: var(--cc-action-hover);
+  --color-on-action: var(--cc-on-action);
+  --color-secondary: var(--cc-secondary);
+  --color-on-secondary: var(--cc-on-secondary);
+  --color-accent-soft: var(--cc-accent-soft);
+  --color-on-accent-soft: var(--cc-on-accent-soft);
+  --color-nav-selected: var(--cc-nav-selected);
+  --color-on-nav-selected: var(--cc-on-nav-selected);
+  --color-line: var(--cc-border);
+  --color-control: var(--cc-border-control);
+  --color-focus: var(--cc-focus);
+  --color-success: var(--cc-success);
+  --color-warning: var(--cc-warning);
+  --color-danger: var(--cc-danger);
+  --color-info: var(--cc-info);
+  --color-chart-1: var(--cc-chart-1);
+  --color-chart-2: var(--cc-chart-2);
+  --color-chart-3: var(--cc-chart-3);
+  --color-chart-4: var(--cc-chart-4);
+  --color-chart-5: var(--cc-chart-5);
+  --color-chart-6: var(--cc-chart-6);
+  --color-chart-target: var(--cc-chart-target);
+
+  --font-display: var(--cc-font-display);
+  --font-sans: var(--cc-font-body);
+  --font-mono: var(--cc-font-mono);
+
+  --radius-sm: var(--oi-radius-sm);
+  --radius-md: var(--oi-radius-md);
+  --radius-lg: var(--oi-radius-lg);
+
+  --shadow-1: var(--cc-elevation-1);
+  --shadow-2: var(--cc-elevation-2);
+  --shadow-3: var(--cc-elevation-3);
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #141917;
-    --color-text: #EDE9DF;
-    --color-text-muted: #B4B9B1;
-  }
-}
+
 body {
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-family: system-ui, sans-serif;
+  background: var(--cc-bg);
+  color: var(--cc-text);
+  font-family: var(--cc-font-body);
+  font-size: var(--oi-text-base);
+  line-height: var(--oi-leading-body);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--cc-font-display);
+  font-weight: var(--oi-weight-semibold);
+  line-height: var(--oi-leading-heading);
+}
+
+/* One visible focus style for every focusable element (spec 09 §3). */
+:focus-visible {
+  outline: var(--oi-focus-width) solid var(--cc-focus);
+  outline-offset: var(--oi-focus-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

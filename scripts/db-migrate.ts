@@ -1,6 +1,7 @@
 /* Applies pending migrations to DATABASE_URL (npm run db:migrate). */
 import postgres from "postgres";
 import { migrate } from "../src/server/db/migrate";
+import { localShimAllowed } from "../src/server/db/shim-policy";
 
 const url = process.env.DATABASE_URL;
 if (!url) {
@@ -10,7 +11,7 @@ if (!url) {
 const sql = postgres(url, { max: 1, onnotice: () => {} });
 try {
   const applied = await migrate(sql, (m) => console.log(`  ${m}`), {
-    allowLocalShim: process.env.ALLOW_LOCAL_SHIM !== "false",
+    allowLocalShim: localShimAllowed(url, process.env.ALLOW_LOCAL_SHIM),
   });
   console.log(applied.length ? `✓ ${applied.length} migration(s) applied` : "✓ database is up to date");
 } catch (e) {

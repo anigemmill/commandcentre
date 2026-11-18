@@ -135,6 +135,44 @@ Full review: `docs/pilot-review.md`.
   Supabase project's Auth stays locked. Design: `outsideinprojects/docs/identity-architecture.md`;
   variables and secrets: `outsideinprojects/docs/environments.md`.
 
+## 2026-11-18: audit round (no Supabase access)
+
+Documents: `docs/audits/command-centre-repository-audit.md`, `docs/audits/security-and-testing-review.md`,
+`docs/architecture/outside-in-product-ecosystem.md`, `docs/architecture/command-centre-data-model-review.md`,
+`docs/design-system.md`, `docs/product/navigation-and-information-architecture.md`,
+`docs/roadmap/command-centre-implementation-roadmap.md`. Everything in them marked "proposed" awaits
+sign-off.
+
+- **Token layer built ahead of M3** (§22–§23, spec 09). Foundation `--oi-*` in
+  `packages/foundation/tokens.css` (as decided 17 Nov), Command Centre theme in
+  `tokens/command-centre.css`. One naming change from spec 09 §1: the mode-dependent values are
+  `--cc-*` and the semantic layer is Tailwind's own `--color-*` theme (`src/app/globals.css`), as in
+  Reel Deal. Reason: spec 09's semantic names (`--color-bg` …) are Tailwind's namespace, so mapping
+  them onto themselves would create self-referencing variables. Components still read only semantic
+  tokens. Dark-mode values spec 09 does not define (hover, secondary, accent) are added, marked
+  "proposed" in the file, and pass the contrast tests. No components yet.
+- **Contrast is tested automatically** (`src/design/tokens.test.ts`), and **raw colours in application
+  code fail CI** (`npm run check:tokens`).
+- **Start-up validation fixed.** `src/instrumentation.ts` validates the environment when a server
+  starts, so a misconfigured production server no longer reports "Ready" and then fails every request.
+- **Local compatibility file is local by default.** `npm run db:migrate` applies `supabase/local/` (an
+  `auth` stub and an RLS-bypassing `service_role`) only to a database on this machine, unless
+  `ALLOW_LOCAL_SHIM=true` is set.
+- **Incident: `accounts-dev` contains Reel Deal's schema.** On 17 Nov, in a Reel Deal session, Reel
+  Deal's eight migrations were applied to `accounts-dev` in the belief it was a Reel Deal test project.
+  No data was written. `accounts-dev` is the identity project for every product and must hold only the
+  account service's schema. Correction needs Supabase access and an owner decision (below).
+
 ## Open questions for the owner
 
-None open. Next decisions come with the first build milestone.
+1. **`accounts-dev` correction:** recreate the project (free, nothing to keep; simplest and cleanest),
+   or remove Reel Deal's objects with a reviewed script? Recommended: recreate.
+2. **First commercial release:** Phase 1 + billing + production readiness, with the AI workforce and
+   product integrations as later upgrades (roadmap §2)?
+3. **Shared account settings:** theme, locale and time zone mastered in the account service
+   (ecosystem §7)?
+4. **Navigation:** Knowledge Hub as its own sidebar item, Integrations under Settings, Strategy
+   Assistant as a top-bar panel, unsubscribed products shown by default (navigation §1, §4)?
+5. **Branch protection:** create a protected `main` branch with required CI (repository audit R10)?
+6. **Spec corrections:** update spec 01 (it still lists Command Centre's own Supabase Auth and a
+   Supabase CLI stack) and fold data model review §3–§5 into spec 02 before M2b?
