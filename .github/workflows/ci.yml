@@ -26,8 +26,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run check:secrets
+      - run: npm run check:deps
       - run: npm run check:migrations
       - run: npm run check:tokens
+      - run: npm run check:env:production
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test

@@ -30,7 +30,10 @@ The app runs on http://localhost:3000. `/api/health` reports whether the databas
 
 | Command | What it does |
 |---|---|
-| `npm run check` | Migration safety, token guard, type check, lint and unit tests (what CI runs, minus the build) |
+| `npm run check` | Migration safety, token guard, secret scan, type check, lint and unit tests (what CI runs, minus the build, the dependency audit and the production settings check) |
+| `npm run check:secrets` | Fails on committed credentials, or on `process.env` read anywhere in `src/` other than `src/server/env.ts` |
+| `npm run check:deps` | Fails on a high or critical advisory in a production dependency (`npm audit --omit=dev`) |
+| `npm run check:env:production` | Proves the production start-up rules: a complete production environment passes, missing settings or a local database fail |
 | `npm run check:tokens` | Fails on raw colours or direct theme tokens in `src/` (use semantic utilities; `docs/design-system.md`) |
 | `npm run test:db` | Database tests against the local database (starts it if needed via `npm run setup` first) |
 | `npm run check:env` | Validates the current environment the way the server does at start-up |

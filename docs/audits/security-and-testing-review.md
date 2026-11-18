@@ -129,7 +129,9 @@ Nothing was weakened: no RLS, grant, header or validation rule was loosened to m
 
 ## 9. Recommended additions to CI (small, no new services)
 
-1. `npm audit --omit=dev --audit-level=high`.
-2. A secret scan (port Reel Deal's `check:secrets`).
-3. Run `npm run check:env` with a production-shaped environment to keep the start-up rules honest.
+1. ✅ 18 Nov: `npm run check:deps` (`npm audit --omit=dev --audit-level=high`).
+2. ✅ 18 Nov: `npm run check:secrets`, ported from Reel Deal, with Supabase secret-key, Anthropic,
+   Stripe webhook and password-in-URL patterns added.
+3. ✅ 18 Nov: `npm run check:env:production`: a complete production environment must pass; missing
+   settings and a local database must fail.
 4. When screens exist: Playwright with axe at 375, 768 and 1280 px, light and dark.
