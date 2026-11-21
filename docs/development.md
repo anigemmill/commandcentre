@@ -53,6 +53,10 @@ Postgres 16 service, on every push and pull request.
   removes Supabase's broad defaults). Grant what a table needs explicitly.
 - `npm run db:migrate` applies `supabase/local/` only to a database on this machine. For any other
   non-Supabase database it refuses unless `ALLOW_LOCAL_SHIM=true` is set deliberately.
+- **Target guard.** `npm run db:migrate` first checks the target (`src/server/db/migration-guard.ts`):
+  a Supabase project must be listed in `config/database-targets.json` (none yet, so only local
+  databases are accepted), and a database carrying another product's meta schema or identity marker
+  is refused. Nothing is written when the check fails.
 
 ## Start-up checks
 

@@ -163,10 +163,22 @@ sign-off.
   No data was written. `accounts-dev` is the identity project for every product and must hold only the
   account service's schema. Correction needs Supabase access and an owner decision (below).
 
+## 2026-11-19: `accounts-dev` rebuilt; migration target guard (approved by the owner)
+
+- **Resolved.** The owner deleted the old `accounts-dev` (`xmqivpwwdksahxkkamgm`). A new one
+  (`egtlqrmujhxelczbyszj`, Outside In Development, Sydney, US$0) holds only the account service's
+  foundation migration and identity marker. Details and which project belongs to which product:
+  `outsideinprojects/docs/environments.md`; decision record: `outsideinprojects/docs/decisions.md`.
+- **Migration target guard** in all three repositories: `src/server/db/migration-target.ts` (shared
+  verbatim; change all three together) and `config/database-targets.json`. Command Centre lists no
+  hosted project yet, so `npm run db:migrate` accepts only local databases until `commandcentre-dev`
+  exists and is added to that file.
+- **Development environment:** the cloud environment used for Command Centre work reaches only the new
+  `accounts-dev` among Supabase hosts; Reel Deal's production project was removed from it.
+
 ## Open questions for the owner
 
-1. **`accounts-dev` correction:** recreate the project (free, nothing to keep; simplest and cleanest),
-   or remove Reel Deal's objects with a reviewed script? Recommended: recreate.
+1. ~~`accounts-dev` correction~~: done 19 Nov (recreated).
 2. **First commercial release:** Phase 1 + billing + production readiness, with the AI workforce and
    product integrations as later upgrades (roadmap §2)?
 3. **Shared account settings:** theme, locale and time zone mastered in the account service
