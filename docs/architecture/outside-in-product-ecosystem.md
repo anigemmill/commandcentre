@@ -49,7 +49,8 @@ Approved (17 Nov). Summary only; the master is `identity-architecture.md`.
 - Each product is an **OAuth 2.1 / OpenID Connect client** of it: authorisation code with PKCE, a
   confidential client secret, and tokens kept in an encrypted, httpOnly cookie on the product's domain.
 - Each product verifies access tokens **offline** with the account service's JWKS: signature, exactly
-  one issuer per environment, audience equal to the product, expiry.
+  one issuer per environment, `client_id` equal to the product's OAuth client (not `aud`, which
+  Supabase leaves generic; account service `identity-architecture.md` §2), expiry.
 - Each product's own Supabase Auth is locked: sign-ups off, no providers, no customer users.
 - Requests run as the user: `set local role authenticated` plus the verified claims in
   `request.jwt.claims`, so `auth.uid()` and RLS work as on Supabase.
@@ -68,12 +69,12 @@ sequenceDiagram
   AS->>CC: redirect with code
   CC->>AS: exchange code (PKCE verifier + client secret)
   AS->>CC: access, refresh and ID tokens
-  CC->>CC: verify offline (JWKS, iss, aud, exp), read local mirror
+  CC->>CC: verify offline (JWKS, iss, client_id, exp), read local mirror
   CC->>P: app, as that user under RLS
 ```
 
 **Proposed here: one token verifier package.** All three products need identical verification
-(issuer pinning, audience, clock skew, JWKS caching and rotation, `amr` checks for sensitive actions).
+(issuer pinning, `client_id` pinning, clock skew, JWKS caching and rotation, `amr` checks for sensitive actions).
 Write it once in `packages/foundation/` beside the tokens, test it against a local issuer, and extract
 it with the tokens when a second product adopts it (same rule as the decided design foundation).
 

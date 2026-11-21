@@ -34,7 +34,7 @@ one issuer per environment, encrypted httpOnly session cookie, RLS as the user) 
 to verify when M2b is built, each as an automated test:
 
 1. A token from another environment's issuer is refused (spec 13, identity-architecture §5).
-2. A token with the wrong audience (another product's) is refused.
+2. A token issued to another product (a different `client_id`), or with no `client_id`, is refused.
 3. An expired token is refused; refresh works; a revoked session cannot refresh.
 4. `alg: none` and HS256 tokens are refused (asymmetric keys only).
 5. Removing a member in accounts blocks them within a minute (mirror event), whatever the token says.
@@ -118,7 +118,7 @@ Nothing was weakened: no RLS, grant, header or validation rule was loosened to m
 |---|---|---|
 | Migrations, RLS guard, default grants | ✅ (done) | Re-run to prove A1 |
 | Policies and isolation suite for every table | ✅ (local Postgres + compatibility file) | Re-run before release |
-| Token verification, issuer and audience pinning, expiry, key rotation | ✅ with a local test issuer and JWKS | — |
+| Token verification, issuer and `client_id` pinning, expiry, key rotation | ✅ with a local test issuer and JWKS | — |
 | Full sign-in, code exchange, refresh, sign-out everywhere | ❌ | `accounts-dev` (after the R2 correction) |
 | Mirror events and reconciliation | ✅ with signed test events | End-to-end with the account service |
 | Supabase security and performance advisors | ❌ | Hosted project |
