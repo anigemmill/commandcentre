@@ -176,13 +176,25 @@ sign-off.
 - **Development environment:** the cloud environment used for Command Centre work reaches only the new
   `accounts-dev` among Supabase hosts; Reel Deal's production project was removed from it.
 
+## 2026-11-22: ecosystem domains and identity (owner direction; architecture proposed)
+
+- The ecosystem architecture is now one document: `outsideinprojects/docs/identity-architecture.md`.
+  `docs/architecture/outside-in-product-ecosystem.md` was cut down to Command Centre's part and points
+  there, so the two cannot contradict each other.
+- Confirmed URLs: `theoutsidein.nz` (parent), `theoutsidein.nz/findable/`, `theoutsidein.nz/reeldeal/`.
+  Proposed: `theoutsidein.nz/command-centre/` for Command Centre's marketing, and `app.theoutsidein.nz`
+  as the shared entry point (today it serves Findable's live app).
+- Proposed for Command Centre: its signed-in app on its own origin under `theoutsidein.nz`, as an OIDC
+  client of the account service, verifying `client_id` (not `aud`). Open decisions D1–D7 are listed
+  once, in the master's §12.
+
 ## Open questions for the owner
 
 1. ~~`accounts-dev` correction~~: done 19 Nov (recreated).
 2. **First commercial release:** Phase 1 + billing + production readiness, with the AI workforce and
    product integrations as later upgrades (roadmap §2)?
 3. **Shared account settings:** theme, locale and time zone mastered in the account service
-   (ecosystem §7)?
+   (`outsideinprojects/docs/schema-proposal.md`, profiles)?
 4. **Navigation:** Knowledge Hub as its own sidebar item, Integrations under Settings, Strategy
    Assistant as a top-bar panel, unsubscribed products shown by default (navigation §1, §4)?
 5. **Branch protection:** create a protected `main` branch with required CI (repository audit R10)?

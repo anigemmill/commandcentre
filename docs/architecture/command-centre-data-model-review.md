@@ -60,7 +60,7 @@ There are **no domain tables**. Every entity below is "specified only".
 | G8 | `saved_views` | `user_id`, `org_id`, `workspace_id`, `module`, `name`, `filters jsonb`, `sort jsonb`, `shared bool` | M07.2 saved views and filters |
 | G9 | `integration_syncs` | `integration_id`, `started_at`, `finished_at`, `status`, `rows`, `error_code`, `error_detail` | Connection health and "last synced" (spec 01 risks) |
 | G10 | `notification_preferences` | `user_id`, `org_id`, `kind`, `channel` (`in_app`, `email`, `push`), `enabled` | A.2 |
-| G11 | `account_event_receipts`, `account_mirror_state` | `event_id` pk, `org_id`, `seq`, `type`, `received_at`; `org_id` pk, `last_seq`, `last_reconciled_at` | Idempotent, ordered mirror updates from the account service (ecosystem doc §4) |
+| G11 | `account_event_receipts`, `account_mirror_state` | `event_id` pk, `org_id`, `seq`, `type`, `received_at`; `org_id` pk, `last_seq`, `last_reconciled_at` | Idempotent, ordered mirror updates from the account service (`docs/architecture/outside-in-product-ecosystem.md` §3) |
 | G12 | `webhook_endpoints`, `webhook_deliveries` | `org_id`, `url`, `secret_ref`, `events text[]`, `status`; `endpoint_id`, `event_id`, `attempt`, `status_code`, `next_attempt_at` | Webhooks out with a delivery log (spec 01 §6) |
 | G13 | `idempotency_keys` | `org_id`, `principal`, `key`, `request_hash`, `response jsonb`, `created_at` (24 h) | `Idempotency-Key` on writes (spec 07 §2) |
 | G14 | `external_links` (or keep `external_ref jsonb`) | `org_id`, `record_type`, `record_id`, `product`, `external_id`, `synced_at` | One indexed place to answer "which Command Centre record points at Reel Deal project X" (needed for incoming events) |
