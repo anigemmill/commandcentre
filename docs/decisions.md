@@ -188,6 +188,16 @@ sign-off.
   client of the account service, verifying `client_id` (not `aud`). Open decisions D1–D7 are listed
   once, in the master's §12.
 
+## 2026-11-22: decisions D1–D7 approved; Command Centre integrates first
+
+- Approved architectural directions (not DNS, hosting or production changes), recorded once in
+  `outsideinprojects/docs/identity-architecture.md` §12. For Command Centre: its app is
+  `commandcentre.theoutsidein.nz` (D2, D5); product sign-out and global sign-out are distinct (D6);
+  the session policy is reviewed before implementation (D7).
+- **Command Centre is the first product to integrate** with the account service, as the lowest-risk
+  test of the shared identity design. Plan: `outsideinprojects/docs/integrations/command-centre.md`.
+  It starts only once `outsideinprojects/docs/security-review.md`'s gate is met.
+
 ## Open questions for the owner
 
 1. ~~`accounts-dev` correction~~: done 19 Nov (recreated).

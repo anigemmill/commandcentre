@@ -16,9 +16,9 @@ Updated 22 November 2026. Labels: **Current** (built), **Proposed**, **Decided**
   never reimplements Findable's or Reel Deal's specialist work (CLAUDE.md).
 - Marketing: `https://theoutsidein.nz/command-centre/` (**Proposed**, not built), next to the
   confirmed `/findable/` and `/reeldeal/`.
-- Signed-in app: its own origin under `theoutsidein.nz` (**Proposed**, e.g.
-  `commandcentre.theoutsidein.nz` **[DECIDE D5]**), reached from the Outside In account at
-  `app.theoutsidein.nz` (**Proposed, D1**) and from the product switcher.
+- Signed-in app: **`commandcentre.theoutsidein.nz`** (**Decided** D2, D5, 22 Nov 2026; not set up),
+  reached from the Outside In account at `app.theoutsidein.nz` (**Decided** D1, after Findable's
+  migration) and from the product switcher.
 - Today: no deployment, no sign-in, no tables (**Current**, M1).
 
 ## 2. How Command Centre signs people in (Proposed, milestone M2b)
@@ -62,7 +62,9 @@ Through documented APIs only (`docs/specs/07-integration-contracts.md`): REST `/
 exchange for a signed-in person, account-issued service tokens for background agent work, signed
 webhooks. Command Centre is never granted Reel Deal's `rd:render`.
 
-## 6. Command Centre's part of the open decisions
+## 6. Decisions and the integration plan
 
-Owner decisions are listed once, in `identity-architecture.md` §12. The ones that change Command
-Centre's work: **D2** (own origin), **D5** (its hostname), **D6** (what product sign-out does).
+Decisions D1–D7 (approved 22 Nov 2026) are listed once, in `identity-architecture.md` §12. Command
+Centre is the **first product to integrate**; the exact changes, tests and exit criteria are in
+`outsideinprojects/docs/integrations/command-centre.md`. It starts only once the security gate in
+`outsideinprojects/docs/security-review.md` is met.

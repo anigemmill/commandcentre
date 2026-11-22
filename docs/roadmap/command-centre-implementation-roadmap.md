@@ -6,11 +6,21 @@ audits. Milestone numbers (M…) are spec 11's; account-service steps (A…) are
 starts (spec 11). Sizes are relative (S ≈ days, M ≈ 1–2 weeks, L ≈ 3+ weeks of focused work), not
 commitments.
 
+> **Update, 22 Nov 2026.** The identity work (R2, R3) now follows the ecosystem roadmap in
+> `outsideinprojects/docs/plan.md`, revised to the owner's order: (1) security review and
+> authentication foundation, (2) verified token behaviour and the shared verifier, (3) core account
+> schema, (4) organisations and memberships, (5) product registry, entitlements **and events**,
+> (6) account UI and launcher, (7) **Command Centre integration, the first product**, (8) Reel Deal,
+> (9) Findable, (10) billing. Command Centre's exact changes:
+> `outsideinprojects/docs/integrations/command-centre.md`. Its local-issuer work (R2's first half,
+> R3's tenancy and isolation) can start once step 2 has fixed the token rules; the integration itself
+> waits for steps 1–5. Command Centre's app host is `commandcentre.theoutsidein.nz` (decided D5).
+
 ## 1. Where things stand
 
 | Done | In progress elsewhere | Blocked |
 |---|---|---|
-| M1 foundations; tonight: start-up validation, token layer, contrast check, token guard, shim policy | Account service A2 (sign-in pages built, not run against real Auth) | A2 end-to-end tests: `accounts-dev` needs correcting (repository audit R2) and Supabase access |
+| M1 foundations; start-up validation, token layer, contrast check, token guard, shim policy, CI additions, migration target guard | Account service step 1 (security review complete as a design review, 22 Nov; settings not yet entered) | Step 2 needs the OAuth server turned on in `accounts-dev` (approval) |
 
 ## 2. What "commercially usable" means
 
