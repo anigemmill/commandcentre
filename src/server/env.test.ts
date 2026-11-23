@@ -26,4 +26,13 @@ describe("parseEnv", () => {
     const env = parseEnv({ NODE_ENV: "production", APP_URL: "https://app.example.com", DATABASE_URL: "postgres://u:p@db.example.com:5432/db" });
     expect(env.APP_URL).toBe("https://app.example.com");
   });
+
+  it("refuses the development sign-in in production and on any non-local address", () => {
+    expect(() =>
+      parseEnv({ NODE_ENV: "production", APP_URL: "https://app.example.com", DATABASE_URL: "postgres://u:p@db.example.com:5432/db", DEV_IDENTITY: "enabled" }),
+    ).toThrow(/DEV_IDENTITY must not be enabled in production/);
+    expect(() => parseEnv({ NODE_ENV: "development", APP_URL: "https://preview.example.com", DEV_IDENTITY: "enabled" })).toThrow(/localhost/);
+    expect(parseEnv({ NODE_ENV: "development", DEV_IDENTITY: "enabled" }).DEV_IDENTITY).toBe("enabled");
+    expect(parseEnv({}).DEV_IDENTITY).toBe("disabled");
+  });
 });

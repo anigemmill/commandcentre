@@ -23,8 +23,10 @@
     "db:local": "scripts/db-local.sh start",
     "db:stop": "scripts/db-local.sh stop",
     "db:migrate": "node --env-file-if-exists=.env.local --import tsx scripts/db-migrate.ts",
-    "setup": "npm run db:local && DATABASE_URL=$(scripts/db-local.sh url) npm run db:migrate",
-    "test:db": "TEST_DATABASE_URL=${TEST_DATABASE_URL:-$(scripts/db-local.sh url)} vitest run src/server/db"
+    "setup": "npm run db:local && DATABASE_URL=$(scripts/db-local.sh url) npm run db:migrate && DATABASE_URL=$(scripts/db-local.sh url) npm run db:seed",
+    "test:db": "TEST_DATABASE_URL=${TEST_DATABASE_URL:-$(scripts/db-local.sh url)} vitest run src/server/db",
+    "db:seed": "node --env-file-if-exists=.env.local --import tsx scripts/dev-seed.ts",
+    "test:e2e": "node scripts/smoke-e2e.cjs"
   },
   "dependencies": {
     "jose": "6.2.16",
