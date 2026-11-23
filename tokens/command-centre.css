@@ -21,10 +21,11 @@
   --cc-stone: #d9d2c4;
   --cc-sage: #718777; /* fails as body text on ivory (3.42:1): large text, icons and chart marks only */
 
-  /* Typefaces (decisions 2026-11-17: families are per product). Loaded by the app in M3. */
-  --cc-font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --cc-font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --cc-font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Typefaces (decisions 2026-11-17: families are per product). Self-hosted by next/font in
+     src/app/layout.tsx, which sets the --cc-face-* variables; the names after them are fallbacks. */
+  --cc-font-display: var(--cc-face-display, "Space Grotesk"), ui-sans-serif, system-ui, sans-serif;
+  --cc-font-body: var(--cc-face-body, "Inter"), ui-sans-serif, system-ui, sans-serif;
+  --cc-font-mono: var(--cc-face-mono, "Geist Mono"), ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 /* Light mode (default) */

@@ -1,30 +1,40 @@
 import Link from "next/link";
-import { Shell } from "@/components/shell";
+import { redirect } from "next/navigation";
+import { signOut } from "@/app/actions";
+import { Eyebrow } from "@/components/ui";
 import { requirePrincipal } from "@/server/auth/session";
 import { me, myOrgs } from "@/server/data";
 
-export const metadata = { title: "Organisations · Command Centre" };
+export const metadata = { title: "Choose an organisation · Command Centre" };
 
 export default async function Orgs() {
   const p = await requirePrincipal();
   const [person, orgs] = await Promise.all([me(p.userId), myOrgs(p.userId)]);
+  if (orgs.length === 1) redirect(`/orgs/${orgs[0].id}`);
   return (
-    <Shell name={person?.display_name ?? ""} crumbs={[{ label: "Organisations" }]}>
-      <h1 className="text-2xl font-semibold">Your organisations</h1>
+    <main className="mx-auto flex min-h-screen max-w-xl flex-col justify-center px-6 py-16">
+      <Eyebrow>The Outside In · Command Centre</Eyebrow>
+      <h1 className="mt-4 font-display text-3xl tracking-tight">Welcome, {person?.display_name.split(" ")[0]}.</h1>
       {orgs.length === 0 ? (
-        <p className="mt-4 text-muted">You aren&apos;t a member of any organisation yet.</p>
+        <p className="mt-4 text-md text-muted">You aren&apos;t a member of any organisation yet. When someone invites you, it will appear here.</p>
       ) : (
-        <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-          {orgs.map((o) => (
-            <li key={o.id}>
-              <Link href={`/orgs/${o.id}`} className="block rounded border border-line bg-surface p-4 hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-focus">
-                <span className="block font-medium">{o.name}</span>
-                <span className="text-sm text-muted">Your role: {o.org_role}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <>
+          <p className="mt-3 text-md text-muted">Choose where to work.</p>
+          <ul className="mt-10 border-t border-line">
+            {orgs.map((o) => (
+              <li key={o.id} className="border-b border-line">
+                <Link href={`/orgs/${o.id}`} className="group flex items-baseline justify-between py-5">
+                  <span className="font-display text-xl group-hover:underline">{o.name}</span>
+                  <span className="font-mono text-xs uppercase tracking-[0.08em] text-muted">{o.org_role}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
-    </Shell>
+      <form action={signOut} className="mt-10">
+        <button className="text-sm text-muted underline decoration-line underline-offset-4 hover:text-ink">Sign out</button>
+      </form>
+    </main>
   );
 }

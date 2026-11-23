@@ -198,6 +198,16 @@ sign-off.
   test of the shared identity design. Plan: `outsideinprojects/docs/integrations/command-centre.md`.
   It starts only once `outsideinprojects/docs/security-review.md`'s gate is met.
 
+## 2026-11-23: MVP built locally; visual direction applied
+
+- **MVP (local development):** development-only sign-in (`docs/mvp-auth.md`), account mirrors,
+  workspaces, tasks and objectives with RLS and isolation tests, and the "Today" home dashboard.
+  Objectives belong to a workspace for now (`strategy_id` arrives with strategies in M6); progress is
+  derived from linked tasks, never stored.
+- **Visual direction (owner, 23 Nov):** premium editorial, light default, forest/ivory/sage, spacious,
+  few cards, no gradients, a dashboard that works as a command centre rather than a task tool. Built on
+  the existing palette and typefaces (no change to spec 09 values); see `docs/design-system.md` §1a.
+
 ## Open questions for the owner
 
 1. ~~`accounts-dev` correction~~: done 19 Nov (recreated).

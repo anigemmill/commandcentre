@@ -19,9 +19,27 @@ The working reference for building screens. The reasoning and the contrast calcu
 | Base styles: body, headings, one focus ring, reduced motion | `src/app/globals.css` | Built |
 | Contrast check of every allowed pair, both modes (86 tests) | `src/design/tokens.test.ts` | Built |
 | Guard: no raw colours or direct theme tokens in app code | `npm run check:tokens` (CI) | Built |
-| Web fonts (Space Grotesk, Inter, Geist Mono) | Font stacks only; loading with `next/font` in M3 | Specified |
+| Web fonts (Space Grotesk, Inter, Geist Mono), self-hosted | `src/app/layout.tsx` (`next/font`) | Built (23 Nov) |
+| Type scale utilities (`text-xs` 12 … `text-base` 14 body … `text-3xl` 36) | `src/app/globals.css` | Built (23 Nov) |
+| Primitives: buttons, fields, page header, section, eyebrow, status indicator, priority, progress, dates, table classes, empty state | `src/components/ui/index.tsx` | Built (23 Nov) |
+| Navigation: sidebar (desktop), disclosure menu (mobile), skip link | `src/components/sidebar.tsx` | Built (23 Nov) |
+| Forms with inline errors, status select, task table, objective list | `src/components/forms.tsx`, `src/components/task-table.tsx` | Built (23 Nov) |
+| Home dashboard ("Today") | `src/app/orgs/[orgId]/page.tsx` | Built (23 Nov) |
 | Theme preference (light, dark, follow device) persisted per user | Device setting works now; saved preference in M3 | Specified |
 | Components, `/design-system` page, axe checks | — | Specified (M3) |
+
+## 1a. Visual direction in use (23 November 2026)
+
+Premium editorial, light by default: ivory page, one white working surface per area (the Focus list,
+open forms), forest only for the primary action, selected navigation and progress. Content is grouped by
+mono section labels over hairline rules, not cards. Status is a shape plus text (hollow = to do,
+half = in progress, struck = blocked, dot = in review, filled tick = done), never colour alone. Numbers
+use Geist Mono with tabular figures. Motion is limited to 120 ms colour changes and hover-revealed row
+actions (always visible below 1024 px). Progress is shown only where it is real (linked tasks done).
+
+Today (home) order: greeting and one-line summary → five-figure pulse strip (each links to a filtered
+task view) → Focus (overdue, due today, urgent/high, blocked) and Objectives on the left; Coming up,
+Workspaces and Activity on the right. Mobile keeps the same order in one column.
 
 ## 2. Token layers
 

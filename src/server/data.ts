@@ -2,8 +2,8 @@ import "server-only";
 import { z } from "zod";
 import { asUser, db } from "./db/client";
 import { devIdentityEnabled } from "./auth/dev-issuer";
-import { TASK_PRIORITIES, TASK_STATUSES } from "./task-options";
-export { TASK_PRIORITIES, TASK_STATUSES };
+import { OBJECTIVE_STATUSES, TASK_PRIORITIES, TASK_STATUSES } from "./task-options";
+export { OBJECTIVE_STATUSES, TASK_PRIORITIES, TASK_STATUSES };
 
 /*
   Service layer. Every read and write runs as the signed-in person (asUser), so RLS decides what
@@ -14,6 +14,9 @@ export type Workspace = { id: string; org_id: string; name: string; slug: string
 export type TaskStatus = (typeof TASK_STATUSES)[number];
 export type Task = {
   id: string;
+  workspace_id: string;
+  workspace_name: string;
+  objective_title: string | null;
   title: string;
   description: string;
   priority: (typeof TASK_PRIORITIES)[number];
@@ -84,13 +87,19 @@ export async function createWorkspace(userId: string, orgId: string, name: strin
   });
 }
 
-export const tasks = (userId: string, workspaceId: string) =>
+/** Tasks in one workspace, or across the organisation when workspaceId is null. */
+export const tasks = (userId: string, orgId: string, workspaceId: string | null) =>
   asUser(userId, (tx) => tx<Task[]>`
-    select t.id, t.title, t.description, t.priority, t.status, to_char(t.due_date, 'YYYY-MM-DD') as due_date,
+    select t.id, t.workspace_id, w.name as workspace_name, o.title as objective_title,
+           t.title, t.description, t.priority, t.status, to_char(t.due_date, 'YYYY-MM-DD') as due_date,
            u.display_name as owner_name, t.created_at
-    from public.tasks t left join public.users u on u.id = t.owner_id
-    where t.workspace_id = ${workspaceId}
-    order by (t.status = 'done'), t.due_date nulls last, t.created_at`);
+    from public.tasks t
+    join public.workspaces w on w.id = t.workspace_id
+    left join public.users u on u.id = t.owner_id
+    left join public.objectives o on o.id = t.objective_id
+    where t.org_id = ${orgId} and (${workspaceId}::uuid is null or t.workspace_id = ${workspaceId})
+    order by (t.status = 'done'), t.due_date nulls last,
+             array_position(array['urgent','high','normal','low'], t.priority), t.created_at`);
 
 export const TaskInput = z.object({
   title: z.string().trim().min(1, "Enter a title").max(200),
@@ -98,6 +107,7 @@ export const TaskInput = z.object({
   priority: z.enum(TASK_PRIORITIES).default("normal"),
   due_date: z.union([z.literal(""), z.iso.date()]).optional().transform((v) => v || null),
   assign_to_me: z.boolean().default(false),
+  objective_id: z.union([z.literal(""), z.uuid()]).optional().transform((v) => v || null),
 });
 
 export async function createTask(userId: string, orgId: string, workspaceId: string, input: z.input<typeof TaskInput>) {
@@ -108,8 +118,8 @@ export async function createTask(userId: string, orgId: string, workspaceId: str
     const [w] = await tx`select 1 from public.workspaces where id = ${workspaceId} and org_id = ${orgId}`;
     if (!w) return { error: "Workspace not found" };
     const [row] = await tx<{ id: string }[]>`
-      insert into public.tasks (org_id, workspace_id, title, description, priority, due_date, owner_id, created_by)
-      values (${orgId}, ${workspaceId}, ${t.title}, ${t.description}, ${t.priority}, ${t.due_date}, ${t.assign_to_me ? userId : null}, ${userId})
+      insert into public.tasks (org_id, workspace_id, title, description, priority, due_date, owner_id, created_by, objective_id)
+      values (${orgId}, ${workspaceId}, ${t.title}, ${t.description}, ${t.priority}, ${t.due_date}, ${t.assign_to_me ? userId : null}, ${userId}, ${t.objective_id})
       returning id`;
     return { id: row.id };
   });
@@ -119,7 +129,10 @@ export async function setTaskStatus(userId: string, taskId: string, status: stri
   const s = z.enum(TASK_STATUSES).safeParse(status);
   if (!s.success) return { error: "Unknown status" };
   return asUser(userId, async (tx) => {
-    const rows = await tx`update public.tasks set status = ${s.data}, updated_at = now() where id = ${taskId} returning id`;
+    const rows = await tx`update public.tasks
+      set status = ${s.data}, updated_at = now(),
+          completed_at = case when ${s.data} = 'done' then coalesce(completed_at, now()) else null end
+      where id = ${taskId} returning id`;
     return rows.length ? { id: taskId } : { error: "Task not found" };
   });
 }
@@ -128,5 +141,144 @@ export async function deleteTask(userId: string, taskId: string) {
   return asUser(userId, async (tx) => {
     const rows = await tx`delete from public.tasks where id = ${taskId} returning id`;
     return rows.length ? { id: taskId } : { error: "Task not found" };
+  });
+}
+
+/* ---------- Objectives ---------- */
+
+export type Objective = {
+  id: string;
+  workspace_id: string;
+  workspace_name: string;
+  title: string;
+  status: (typeof OBJECTIVE_STATUSES)[number];
+  target_date: string | null;
+  owner_name: string | null;
+  tasks_total: number;
+  tasks_done: number;
+};
+
+export const objectives = (userId: string, orgId: string, workspaceId: string | null) =>
+  asUser(userId, (tx) => tx<Objective[]>`
+    select o.id, o.workspace_id, w.name as workspace_name, o.title, o.status,
+           to_char(o.target_date, 'YYYY-MM-DD') as target_date, u.display_name as owner_name,
+           count(t.id)::int as tasks_total, count(t.id) filter (where t.status = 'done')::int as tasks_done
+    from public.objectives o
+    join public.workspaces w on w.id = o.workspace_id
+    left join public.users u on u.id = o.owner_id
+    left join public.tasks t on t.objective_id = o.id
+    where o.org_id = ${orgId} and (${workspaceId}::uuid is null or o.workspace_id = ${workspaceId})
+    group by o.id, w.name, u.display_name
+    order by array_position(array['active','paused','achieved','dropped'], o.status), o.target_date nulls last, o.created_at`);
+
+export const ObjectiveInput = z.object({
+  title: z.string().trim().min(1, "Enter a title").max(200),
+  description: z.string().trim().max(5000).default(""),
+  target_date: z.union([z.literal(""), z.iso.date()]).optional().transform((v) => v || null),
+});
+
+export async function createObjective(userId: string, orgId: string, workspaceId: string, input: z.input<typeof ObjectiveInput>) {
+  const parsed = ObjectiveInput.safeParse(input);
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  const o = parsed.data;
+  return asUser(userId, async (tx) => {
+    const [w] = await tx`select 1 from public.workspaces where id = ${workspaceId} and org_id = ${orgId}`;
+    if (!w) return { error: "Workspace not found" };
+    const [row] = await tx<{ id: string }[]>`
+      insert into public.objectives (org_id, workspace_id, title, description, target_date, owner_id, created_by)
+      values (${orgId}, ${workspaceId}, ${o.title}, ${o.description}, ${o.target_date}, ${userId}, ${userId}) returning id`;
+    return { id: row.id };
+  });
+}
+
+export async function setObjectiveStatus(userId: string, objectiveId: string, status: string) {
+  const s = z.enum(OBJECTIVE_STATUSES).safeParse(status);
+  if (!s.success) return { error: "Unknown status" };
+  return asUser(userId, async (tx) => {
+    const rows = await tx`update public.objectives set status = ${s.data}, updated_at = now() where id = ${objectiveId} returning id`;
+    return rows.length ? { id: objectiveId } : { error: "Objective not found" };
+  });
+}
+
+/* ---------- Home dashboard ---------- */
+
+/** The organisation's day. Workspaces carry a timezone; the MVP home uses New Zealand time. */
+export const HOME_TIMEZONE = "Pacific/Auckland";
+/** Today's date (YYYY-MM-DD) in the home timezone. */
+export const homeToday = (now = new Date()) => new Intl.DateTimeFormat("en-CA", { timeZone: HOME_TIMEZONE }).format(now);
+
+export type DatedItem = { kind: "task" | "objective"; id: string; title: string; date: string; workspace_id: string; workspace_name: string; priority: string | null };
+export type ActivityItem = { at: Date; actor: string | null; verb: string; title: string; workspace_id: string; workspace_name: string };
+
+export async function homeDashboard(userId: string, orgId: string) {
+  return asUser(userId, async (tx) => {
+    const today = homeToday();
+
+    const focus = await tx<Task[]>`
+      select t.id, t.workspace_id, w.name as workspace_name, null as objective_title, t.title, t.description, t.priority,
+             t.status, to_char(t.due_date, 'YYYY-MM-DD') as due_date, u.display_name as owner_name, t.created_at
+      from public.tasks t join public.workspaces w on w.id = t.workspace_id
+      left join public.users u on u.id = t.owner_id
+      where t.org_id = ${orgId} and t.status <> 'done'
+        and (t.due_date <= ${today}::date or t.priority in ('urgent', 'high') or t.status = 'blocked')
+      order by (t.due_date < ${today}::date) desc, array_position(array['urgent','high','normal','low'], t.priority),
+               t.due_date nulls last
+      limit 7`;
+
+    const [counts] = await tx<{ open: number; overdue: number; due_today: number; blocked: number; done_week: number }[]>`
+      select count(*) filter (where status <> 'done')::int as open,
+             count(*) filter (where status <> 'done' and due_date < ${today}::date)::int as overdue,
+             count(*) filter (where status <> 'done' and due_date = ${today}::date)::int as due_today,
+             count(*) filter (where status = 'blocked')::int as blocked,
+             count(*) filter (where status = 'done' and completed_at >= now() - interval '7 days')::int as done_week
+      from public.tasks where org_id = ${orgId}`;
+
+    const upcoming = await tx<DatedItem[]>`
+      select * from (
+        select 'task' as kind, t.id, t.title, to_char(t.due_date, 'YYYY-MM-DD') as date, t.workspace_id, w.name as workspace_name, t.priority
+        from public.tasks t join public.workspaces w on w.id = t.workspace_id
+        where t.org_id = ${orgId} and t.status <> 'done' and t.due_date > ${today}::date and t.due_date <= ${today}::date + 30
+        union all
+        select 'objective', o.id, o.title, to_char(o.target_date, 'YYYY-MM-DD'), o.workspace_id, w.name, null
+        from public.objectives o join public.workspaces w on w.id = o.workspace_id
+        where o.org_id = ${orgId} and o.status = 'active' and o.target_date >= ${today}::date and o.target_date <= ${today}::date + 90
+      ) d order by date, kind limit 6`;
+
+    const activity = await tx<ActivityItem[]>`
+      select * from (
+        select t.completed_at as at, null::text as actor, 'completed' as verb, t.title, t.workspace_id, w.name as workspace_name
+        from public.tasks t join public.workspaces w on w.id = t.workspace_id
+        where t.org_id = ${orgId} and t.completed_at is not null
+        union all
+        select t.created_at, u.display_name, 'added task', t.title, t.workspace_id, w.name
+        from public.tasks t join public.workspaces w on w.id = t.workspace_id join public.users u on u.id = t.created_by
+        where t.org_id = ${orgId}
+        union all
+        select o.created_at, u.display_name, 'set objective', o.title, o.workspace_id, w.name
+        from public.objectives o join public.workspaces w on w.id = o.workspace_id join public.users u on u.id = o.created_by
+        where o.org_id = ${orgId}
+        union all
+        select w.created_at, u.display_name, 'created workspace', w.name, w.id, w.name
+        from public.workspaces w left join public.users u on u.id = w.created_by
+        where w.org_id = ${orgId}
+      ) a order by at desc limit 6`;
+
+    const goals = await tx<Objective[]>`
+      select o.id, o.workspace_id, w.name as workspace_name, o.title, o.status,
+             to_char(o.target_date, 'YYYY-MM-DD') as target_date, null as owner_name,
+             count(t.id)::int as tasks_total, count(t.id) filter (where t.status = 'done')::int as tasks_done
+      from public.objectives o join public.workspaces w on w.id = o.workspace_id
+      left join public.tasks t on t.objective_id = o.id
+      where o.org_id = ${orgId} and o.status = 'active'
+      group by o.id, w.name order by o.target_date nulls last, o.created_at limit 4`;
+
+    const spaces = await tx<{ id: string; name: string; open_tasks: number; next_due: string | null; active_objectives: number }[]>`
+      select w.id, w.name,
+             (select count(*)::int from public.tasks t where t.workspace_id = w.id and t.status <> 'done') as open_tasks,
+             (select to_char(min(t.due_date), 'YYYY-MM-DD') from public.tasks t where t.workspace_id = w.id and t.status <> 'done' and t.due_date >= ${today}::date) as next_due,
+             (select count(*)::int from public.objectives o where o.workspace_id = w.id and o.status = 'active') as active_objectives
+      from public.workspaces w where w.org_id = ${orgId} order by w.name`;
+
+    return { today, focus, counts, upcoming, activity, goals, spaces };
   });
 }

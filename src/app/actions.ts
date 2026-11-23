@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { devIdentityEnabled } from "@/server/auth/dev-issuer";
 import { endSession, requirePrincipal, startDevSession } from "@/server/auth/session";
-import { createTask, createWorkspace, deleteTask, devPersonExists, setTaskStatus } from "@/server/data";
+import { createObjective, createTask, createWorkspace, deleteTask, devPersonExists, setObjectiveStatus, setTaskStatus } from "@/server/data";
 
-export type FormState = { error?: string } | undefined;
+export type FormState = { error?: string; ok?: number } | undefined;
 const Id = z.uuid();
 
 export async function devSignIn(formData: FormData) {
@@ -42,10 +42,34 @@ export async function createTaskAction(_: FormState, formData: FormData): Promis
     priority: String(formData.get("priority") ?? "normal") as "normal",
     due_date: String(formData.get("due_date") ?? ""),
     assign_to_me: formData.get("assign_to_me") === "on",
+    objective_id: String(formData.get("objective_id") ?? ""),
   });
   if ("error" in r) return { error: r.error };
-  revalidatePath(`/orgs/${orgId.data}/w/${workspaceId.data}`);
-  return {};
+  revalidatePath(`/orgs/${orgId.data}`, "layout");
+  return { ok: Date.now() };
+}
+
+export async function createObjectiveAction(_: FormState, formData: FormData): Promise<FormState> {
+  const p = await requirePrincipal();
+  const orgId = Id.safeParse(formData.get("org_id"));
+  const workspaceId = Id.safeParse(formData.get("workspace_id"));
+  if (!orgId.success || !workspaceId.success) return { error: "Workspace not found" };
+  const r = await createObjective(p.userId, orgId.data, workspaceId.data, {
+    title: String(formData.get("title") ?? ""),
+    description: String(formData.get("description") ?? ""),
+    target_date: String(formData.get("target_date") ?? ""),
+  });
+  if ("error" in r) return { error: r.error };
+  revalidatePath(`/orgs/${orgId.data}`, "layout");
+  return { ok: Date.now() };
+}
+
+export async function setObjectiveStatusAction(formData: FormData) {
+  const p = await requirePrincipal();
+  const id = Id.safeParse(formData.get("objective_id"));
+  if (!id.success) return;
+  await setObjectiveStatus(p.userId, id.data, String(formData.get("status") ?? ""));
+  revalidatePath("/orgs", "layout");
 }
 
 export async function setTaskStatusAction(formData: FormData) {

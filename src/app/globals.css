@@ -45,6 +45,17 @@
   --font-sans: var(--cc-font-body);
   --font-mono: var(--cc-font-mono);
 
+  /* Type scale from spec 09 §4 (body 14 px = text-base). */
+  --text-xs: var(--oi-text-xs);
+  --text-sm: var(--oi-text-sm);
+  --text-base: var(--oi-text-base);
+  --text-md: var(--oi-text-md);
+  --text-lg: var(--oi-text-lg);
+  --text-xl: var(--oi-text-xl);
+  --text-2xl: var(--oi-text-2xl);
+  --text-3xl: var(--oi-text-3xl);
+
+  --radius-pill: var(--oi-radius-pill);
   --radius-sm: var(--oi-radius-sm);
   --radius-md: var(--oi-radius-md);
   --radius-lg: var(--oi-radius-lg);

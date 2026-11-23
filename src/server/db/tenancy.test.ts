@@ -110,4 +110,19 @@ describe.skipIf(!url)("tenancy and tasks: row level security", () => {
     expect(await as(memberA, (tx) => tx`update public.tasks set status = 'done' where id = ${taskA} returning status`)).toEqual([{ status: "done" }]);
     expect(await as(ownerA, (tx) => tx`delete from public.tasks where id = ${taskA} returning id`)).toEqual([{ id: taskA }]);
   });
+
+  it("isolates objectives and keeps a task's objective in the same workspace", async () => {
+    const [{ id: objA }] = await as(memberA, (tx) => tx`insert into public.objectives (org_id, workspace_id, title, created_by) values (${A}, ${wsA}, 'Grow bookings', ${memberA}) returning id`);
+    expect(await as(ownerB, (tx) => tx`select * from public.objectives where id = ${objA}`)).toEqual([]);
+    await denied(as(ownerB, (tx) => tx`insert into public.objectives (org_id, workspace_id, title, created_by) values (${A}, ${wsA}, 'x', ${ownerB})`));
+    expect(await as(ownerB, (tx) => tx`update public.objectives set title = 'x' where id = ${objA} returning id`)).toEqual([]);
+    // a task in org B can't point at org A's objective
+    await denied(as(ownerB, (tx) => tx`insert into public.tasks (org_id, workspace_id, title, created_by, objective_id) values (${B}, ${wsB}, 'x', ${ownerB}, ${objA})`));
+    // members can't delete objectives; owners can, and linked tasks are kept
+    const [{ id: t }] = await as(memberA, (tx) => tx`insert into public.tasks (org_id, workspace_id, title, created_by, objective_id) values (${A}, ${wsA}, 'linked', ${memberA}, ${objA}) returning id`);
+    expect(await as(memberA, (tx) => tx`delete from public.objectives where id = ${objA} returning id`)).toEqual([]);
+    expect(await as(ownerA, (tx) => tx`delete from public.objectives where id = ${objA} returning id`)).toEqual([{ id: objA }]);
+    expect(await as(ownerA, (tx) => tx`select objective_id from public.tasks where id = ${t}`)).toEqual([{ objective_id: null }]);
+  });
 });
+
