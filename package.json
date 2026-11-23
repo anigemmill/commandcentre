@@ -27,6 +27,7 @@
     "test:db": "TEST_DATABASE_URL=${TEST_DATABASE_URL:-$(scripts/db-local.sh url)} vitest run src/server/db"
   },
   "dependencies": {
+    "jose": "6.2.16",
     "next": "16.4.6",
     "postgres": "^4.1.1",
     "react": "19.3.0",
