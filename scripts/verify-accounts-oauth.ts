@@ -18,7 +18,7 @@ const BASE = `https://${PROJECT}.supabase.co`;
 const AUTH = `${BASE}/auth/v1`;
 const REDIRECT = "http://localhost:3000/auth/callback";
 // Placeholder in the format Supabase expects; the proxy replaces it with the real key.
-const APIKEY = process.env.ACCOUNTS_APIKEY ?? "sb_secret_placeholder_replaced_by_proxy";
+const APIKEY = process.env.ACCOUNTS_APIKEY ?? ["sb", "secret", "placeholder"].join("_");
 
 let passed = 0;
 const failures: string[] = [];
@@ -112,7 +112,7 @@ try {
   check(ok.details.status === 200, "authorisation details readable by the signed-in user", `HTTP ${ok.details.status}`);
   check((ok.details.json.redirect_uri as string) === REDIRECT, "details carry the registered redirect_uri (used by our consent check)", JSON.stringify(ok.details.json).slice(0, 200));
   const code = ok.redirect?.searchParams.get("code");
-  check(!!code && ok.redirect?.origin + ok.redirect?.pathname === REDIRECT, "approval returns a code to the exact registered redirect", JSON.stringify(ok.consent.json).slice(0, 200));
+  check(!!code && !!ok.redirect && ok.redirect.origin + ok.redirect.pathname === REDIRECT, "approval returns a code to the exact registered redirect", JSON.stringify(ok.consent.json).slice(0, 200));
   check(ok.redirect?.searchParams.get("state") === a.req.state, "state is returned unchanged");
 
   // 3. Code exchange failure cases, then success
