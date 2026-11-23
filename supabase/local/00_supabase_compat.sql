@@ -2,10 +2,12 @@
 -- so they run unchanged on plain Postgres (local development, CI) and embedded PGlite.
 -- Never apply this to a Supabase project: Supabase already provides all of it.
 
+-- Roles are cluster-wide: databases set up in parallel (tests) can race to create them, so a
+-- role that appeared in the meantime is fine.
 do $$ begin
-  if not exists (select 1 from pg_roles where rolname = 'anon') then create role anon nologin; end if;
-  if not exists (select 1 from pg_roles where rolname = 'authenticated') then create role authenticated nologin; end if;
-  if not exists (select 1 from pg_roles where rolname = 'service_role') then create role service_role nologin bypassrls; end if;
+  begin create role anon nologin; exception when duplicate_object or unique_violation then null; end;
+  begin create role authenticated nologin; exception when duplicate_object or unique_violation then null; end;
+  begin create role service_role nologin bypassrls; exception when duplicate_object or unique_violation then null; end;
 end $$;
 
 -- Supabase's default privileges: every new public table is granted to these roles.
