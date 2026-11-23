@@ -135,6 +135,78 @@ Full review: `docs/pilot-review.md`.
   Supabase project's Auth stays locked. Design: `outsideinprojects/docs/identity-architecture.md`;
   variables and secrets: `outsideinprojects/docs/environments.md`.
 
+## 2026-11-18: audit round (no Supabase access)
+
+Documents: `docs/audits/command-centre-repository-audit.md`, `docs/audits/security-and-testing-review.md`,
+`docs/architecture/outside-in-product-ecosystem.md`, `docs/architecture/command-centre-data-model-review.md`,
+`docs/design-system.md`, `docs/product/navigation-and-information-architecture.md`,
+`docs/roadmap/command-centre-implementation-roadmap.md`. Everything in them marked "proposed" awaits
+sign-off.
+
+- **Token layer built ahead of M3** (§22–§23, spec 09). Foundation `--oi-*` in
+  `packages/foundation/tokens.css` (as decided 17 Nov), Command Centre theme in
+  `tokens/command-centre.css`. One naming change from spec 09 §1: the mode-dependent values are
+  `--cc-*` and the semantic layer is Tailwind's own `--color-*` theme (`src/app/globals.css`), as in
+  Reel Deal. Reason: spec 09's semantic names (`--color-bg` …) are Tailwind's namespace, so mapping
+  them onto themselves would create self-referencing variables. Components still read only semantic
+  tokens. Dark-mode values spec 09 does not define (hover, secondary, accent) are added, marked
+  "proposed" in the file, and pass the contrast tests. No components yet.
+- **Contrast is tested automatically** (`src/design/tokens.test.ts`), and **raw colours in application
+  code fail CI** (`npm run check:tokens`).
+- **Start-up validation fixed.** `src/instrumentation.ts` validates the environment when a server
+  starts, so a misconfigured production server no longer reports "Ready" and then fails every request.
+- **Local compatibility file is local by default.** `npm run db:migrate` applies `supabase/local/` (an
+  `auth` stub and an RLS-bypassing `service_role`) only to a database on this machine, unless
+  `ALLOW_LOCAL_SHIM=true` is set.
+- **Incident: `accounts-dev` contains Reel Deal's schema.** On 17 Nov, in a Reel Deal session, Reel
+  Deal's eight migrations were applied to `accounts-dev` in the belief it was a Reel Deal test project.
+  No data was written. `accounts-dev` is the identity project for every product and must hold only the
+  account service's schema. Correction needs Supabase access and an owner decision (below).
+
+## 2026-11-19: `accounts-dev` rebuilt; migration target guard (approved by the owner)
+
+- **Resolved.** The owner deleted the old `accounts-dev` (`xmqivpwwdksahxkkamgm`). A new one
+  (`egtlqrmujhxelczbyszj`, Outside In Development, Sydney, US$0) holds only the account service's
+  foundation migration and identity marker. Details and which project belongs to which product:
+  `outsideinprojects/docs/environments.md`; decision record: `outsideinprojects/docs/decisions.md`.
+- **Migration target guard** in all three repositories: `src/server/db/migration-target.ts` (shared
+  verbatim; change all three together) and `config/database-targets.json`. Command Centre lists no
+  hosted project yet, so `npm run db:migrate` accepts only local databases until `commandcentre-dev`
+  exists and is added to that file.
+- **Development environment:** the cloud environment used for Command Centre work reaches only the new
+  `accounts-dev` among Supabase hosts; Reel Deal's production project was removed from it.
+
+## 2026-11-22: ecosystem domains and identity (owner direction; architecture proposed)
+
+- The ecosystem architecture is now one document: `outsideinprojects/docs/identity-architecture.md`.
+  `docs/architecture/outside-in-product-ecosystem.md` was cut down to Command Centre's part and points
+  there, so the two cannot contradict each other.
+- Confirmed URLs: `theoutsidein.nz` (parent), `theoutsidein.nz/findable/`, `theoutsidein.nz/reeldeal/`.
+  Proposed: `theoutsidein.nz/command-centre/` for Command Centre's marketing, and `app.theoutsidein.nz`
+  as the shared entry point (today it serves Findable's live app).
+- Proposed for Command Centre: its signed-in app on its own origin under `theoutsidein.nz`, as an OIDC
+  client of the account service, verifying `client_id` (not `aud`). Open decisions D1–D7 are listed
+  once, in the master's §12.
+
+## 2026-11-22: decisions D1–D7 approved; Command Centre integrates first
+
+- Approved architectural directions (not DNS, hosting or production changes), recorded once in
+  `outsideinprojects/docs/identity-architecture.md` §12. For Command Centre: its app is
+  `commandcentre.theoutsidein.nz` (D2, D5); product sign-out and global sign-out are distinct (D6);
+  the session policy is reviewed before implementation (D7).
+- **Command Centre is the first product to integrate** with the account service, as the lowest-risk
+  test of the shared identity design. Plan: `outsideinprojects/docs/integrations/command-centre.md`.
+  It starts only once `outsideinprojects/docs/security-review.md`'s gate is met.
+
 ## Open questions for the owner
 
-None open. Next decisions come with the first build milestone.
+1. ~~`accounts-dev` correction~~: done 19 Nov (recreated).
+2. **First commercial release:** Phase 1 + billing + production readiness, with the AI workforce and
+   product integrations as later upgrades (roadmap §2)?
+3. **Shared account settings:** theme, locale and time zone mastered in the account service
+   (`outsideinprojects/docs/schema-proposal.md`, profiles)?
+4. **Navigation:** Knowledge Hub as its own sidebar item, Integrations under Settings, Strategy
+   Assistant as a top-bar panel, unsubscribed products shown by default (navigation §1, §4)?
+5. **Branch protection:** create a protected `main` branch with required CI (repository audit R10)?
+6. **Spec corrections:** update spec 01 (it still lists Command Centre's own Supabase Auth and a
+   Supabase CLI stack) and fold data model review §3–§5 into spec 02 before M2b?

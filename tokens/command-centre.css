@@ -1,0 +1,144 @@
+/*
+  Command Centre theme. Spec: docs/specs/09-design-system.md §3 (values and contrast ratios).
+  Layers (§1): foundation --oi-* (packages/foundation/tokens.css) → product theme --cc-* (this file:
+  brand colours, and each mode's values) → semantic --color-* (Tailwind's theme, src/app/globals.css).
+  Components read semantic tokens only (bg-surface, text-ink, border-control …), never --cc-* or hex.
+  The semantic names live in Tailwind's namespace, as in Reel Deal, so they can't collide with it.
+
+  Modes: light is the default. Dark applies when the user chooses it (class "mode-dark" on <html>)
+  or follows a dark device setting (no "mode-light" class). Persisting the choice per user is
+  milestone M3 (user_preferences); until then the device setting decides.
+
+  Every text/background pair used by components is checked by src/design/tokens.test.ts against
+  the WCAG targets in spec 09. Tokens marked "proposed" are additions not yet in spec 09.
+*/
+:root {
+  /* Brand colours (blueprint §17), unchanged. Not for direct use in components. */
+  --cc-forest: #183c35;
+  --cc-ivory: #f4f1e9;
+  --cc-eucalyptus: #a6b5a2;
+  --cc-charcoal: #252b29;
+  --cc-stone: #d9d2c4;
+  --cc-sage: #718777; /* fails as body text on ivory (3.42:1): large text, icons and chart marks only */
+
+  /* Typefaces (decisions 2026-11-17: families are per product). Loaded by the app in M3. */
+  --cc-font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --cc-font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --cc-font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Light mode (default) */
+:root {
+  color-scheme: light;
+  --cc-bg: var(--cc-ivory);
+  --cc-surface: #ffffff;
+  --cc-surface-muted: #e9e5da; /* Soft Stone at 40% on ivory */
+  --cc-surface-raised: #ffffff;
+  --cc-text: var(--cc-charcoal);
+  --cc-text-muted: #5c6460;
+  --cc-text-accent: #55695a; /* sage ink: Deep Sage itself fails as text */
+  --cc-action: var(--cc-forest);
+  --cc-action-hover: #234f46;
+  --cc-on-action: var(--cc-ivory);
+  --cc-secondary: var(--cc-eucalyptus);
+  --cc-on-secondary: var(--cc-charcoal);
+  --cc-accent-soft: #e3e9e0;
+  --cc-on-accent-soft: var(--cc-forest);
+  --cc-nav-selected: var(--cc-forest);
+  --cc-on-nav-selected: var(--cc-ivory);
+  --cc-border: var(--cc-stone); /* decorative dividers only (1.33:1) */
+  --cc-border-control: #8c8475; /* inputs, checkboxes, secondary button outline */
+  --cc-focus: var(--cc-forest);
+  --cc-success: #2f6b45;
+  --cc-warning: #8a5a00;
+  --cc-danger: #a33a2b;
+  --cc-info: #2d5b7a;
+  --cc-elevation-1: var(--oi-shadow-1);
+  --cc-elevation-2: var(--oi-shadow-2);
+  --cc-elevation-3: var(--oi-shadow-3);
+
+  /* Chart series, fixed order (§3 chart palette). Pair each with a marker shape and dash. */
+  --cc-chart-1: #183c35;
+  --cc-chart-2: #3e5c7a;
+  --cc-chart-3: #a0523a;
+  --cc-chart-4: #55695a;
+  --cc-chart-5: #9a6a12;
+  --cc-chart-6: #6e4d6b;
+  --cc-chart-target: var(--cc-charcoal); /* dashed line labelled "Target" */
+}
+
+/* Dark mode, designed separately (§18), never an inversion. Same declarations in both selectors. */
+@media (prefers-color-scheme: dark) {
+  :root:not(.mode-light) {
+    color-scheme: dark;
+    --cc-bg: #141917;
+    --cc-surface: #1d2421;
+    --cc-surface-muted: #262e2b;
+    --cc-surface-raised: #262e2b;
+    --cc-text: #ede9df;
+    --cc-text-muted: #b4b9b1;
+    --cc-text-accent: var(--cc-eucalyptus); /* proposed */
+    --cc-action: var(--cc-eucalyptus);
+    --cc-action-hover: #bcc8b8; /* proposed */
+    --cc-on-action: #141917;
+    --cc-secondary: #262e2b; /* proposed: raised fill with a control border */
+    --cc-on-secondary: #ede9df;
+    --cc-accent-soft: #24332d; /* proposed */
+    --cc-on-accent-soft: #ede9df;
+    --cc-nav-selected: var(--cc-forest); /* forest only as a large surface behind off-white text */
+    --cc-on-nav-selected: #ede9df;
+    --cc-border: #3a4440;
+    --cc-border-control: #8c8475;
+    --cc-focus: var(--cc-eucalyptus);
+    --cc-success: #9fd1ae;
+    --cc-warning: #e6c07a;
+    --cc-danger: #f0a493;
+    --cc-info: #9ec3dd;
+    --cc-elevation-1: 0 0 0 1px #3a4440;
+    --cc-elevation-2: 0 0 0 1px #3a4440;
+    --cc-elevation-3: 0 0 0 1px #3a4440;
+    --cc-chart-1: #a6b5a2;
+    --cc-chart-2: #8fb0d1;
+    --cc-chart-3: #e0957a;
+    --cc-chart-4: #7fc2a4;
+    --cc-chart-5: #d9ae5f;
+    --cc-chart-6: #c7a2c3;
+    --cc-chart-target: #ede9df;
+  }
+}
+:root.mode-dark {
+  color-scheme: dark;
+  --cc-bg: #141917;
+  --cc-surface: #1d2421;
+  --cc-surface-muted: #262e2b;
+  --cc-surface-raised: #262e2b;
+  --cc-text: #ede9df;
+  --cc-text-muted: #b4b9b1;
+  --cc-text-accent: var(--cc-eucalyptus);
+  --cc-action: var(--cc-eucalyptus);
+  --cc-action-hover: #bcc8b8;
+  --cc-on-action: #141917;
+  --cc-secondary: #262e2b;
+  --cc-on-secondary: #ede9df;
+  --cc-accent-soft: #24332d;
+  --cc-on-accent-soft: #ede9df;
+  --cc-nav-selected: var(--cc-forest);
+  --cc-on-nav-selected: #ede9df;
+  --cc-border: #3a4440;
+  --cc-border-control: #8c8475;
+  --cc-focus: var(--cc-eucalyptus);
+  --cc-success: #9fd1ae;
+  --cc-warning: #e6c07a;
+  --cc-danger: #f0a493;
+  --cc-info: #9ec3dd;
+  --cc-elevation-1: 0 0 0 1px #3a4440;
+  --cc-elevation-2: 0 0 0 1px #3a4440;
+  --cc-elevation-3: 0 0 0 1px #3a4440;
+  --cc-chart-1: #a6b5a2;
+  --cc-chart-2: #8fb0d1;
+  --cc-chart-3: #e0957a;
+  --cc-chart-4: #7fc2a4;
+  --cc-chart-5: #d9ae5f;
+  --cc-chart-6: #c7a2c3;
+  --cc-chart-target: #ede9df;
+}

@@ -16,6 +16,11 @@ a row-level-security guard, a local database and CI are in place. No product fea
 | [`docs/decisions.md`](docs/decisions.md) | Decisions since the blueprint and open questions |
 | [`docs/pilot-review.md`](docs/pilot-review.md) | What the Te Puia pilot and Findable are, what to keep, what not to reproduce |
 | [`docs/specs/`](docs/specs/) | The twelve pre-implementation specifications (blueprint section 37) |
+| [`docs/design-system.md`](docs/design-system.md) | Design system reference: tokens, utilities, component rules |
+| [`docs/audits/`](docs/audits/) | Repository audit; security and testing review (18 Nov 2026) |
+| [`docs/architecture/`](docs/architecture/) | Ecosystem architecture proposal; data model review |
+| [`docs/product/`](docs/product/) | Navigation and information architecture |
+| [`docs/roadmap/`](docs/roadmap/) | Implementation roadmap |
 
 ## Specifications
 

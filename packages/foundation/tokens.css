@@ -1,0 +1,98 @@
+/*
+  The Outside In foundation tokens (--oi-*), shared by Command Centre, Findable and Reel Deal.
+  Spec: docs/specs/09-design-system.md §1 and §4. Decision (2026-11-17): built here first and
+  extracted into a private package once a second product adopts it.
+
+  Foundation = structure only: spacing, type scale, weights, line heights, radius, elevation, motion,
+  layers and layout. No colours and no font families: each product sets those in its own theme
+  (Command Centre: tokens/command-centre.css).
+
+  Breakpoints are listed for reference only, because CSS custom properties cannot be used inside
+  media queries: 640, 768, 1024, 1280, 1536 px.
+*/
+:root {
+  /* Spacing, 4 px base */
+  --oi-space-1: 4px;
+  --oi-space-2: 8px;
+  --oi-space-3: 12px;
+  --oi-space-4: 16px;
+  --oi-space-5: 20px;
+  --oi-space-6: 24px;
+  --oi-space-8: 32px;
+  --oi-space-10: 40px;
+  --oi-space-12: 48px;
+  --oi-space-16: 64px;
+  --oi-space-20: 80px;
+
+  /* Type scale (application). Body is 14 px. */
+  --oi-text-xs: 12px;
+  --oi-text-sm: 13px;
+  --oi-text-base: 14px;
+  --oi-text-md: 16px;
+  --oi-text-lg: 18px;
+  --oi-text-xl: 22px;
+  --oi-text-2xl: 28px;
+  --oi-text-3xl: 36px;
+  --oi-leading-body: 1.5;
+  --oi-leading-heading: 1.2;
+  --oi-weight-regular: 400;
+  --oi-weight-medium: 500;
+  --oi-weight-semibold: 600; /* heading maximum: "strong but restrained" */
+  --oi-tracking-label: 0.08em; /* mono section labels */
+
+  /* Radius */
+  --oi-radius-sm: 4px; /* inputs, badges */
+  --oi-radius-md: 8px; /* buttons, cards */
+  --oi-radius-lg: 12px; /* panels, modals */
+  --oi-radius-pill: 999px;
+
+  /* Elevation (light mode). Dark mode replaces shadows with surface steps and a 1 px border. */
+  --oi-shadow-0: none;
+  --oi-shadow-1: 0 1px 2px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.08);
+  --oi-shadow-2: 0 4px 12px rgb(0 0 0 / 0.1);
+  --oi-shadow-3: 0 12px 32px rgb(0 0 0 / 0.16);
+
+  /* Motion. Non-essential motion is switched off under prefers-reduced-motion (below). */
+  --oi-duration-fast: 120ms; /* hover, press */
+  --oi-duration-base: 200ms; /* panels, menus */
+  --oi-duration-slow: 280ms; /* page transitions */
+  --oi-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Layers */
+  --oi-z-nav: 10;
+  --oi-z-sticky: 20;
+  --oi-z-popover: 30;
+  --oi-z-panel: 40;
+  --oi-z-modal: 50;
+  --oi-z-toast: 60;
+
+  /* Layout */
+  --oi-content-max: 1440px;
+  --oi-reading-max: 72ch;
+  --oi-gutter: 16px; /* mobile; 24 px from 1024 px below */
+  --oi-nav-expanded: 248px;
+  --oi-nav-collapsed: 72px;
+  --oi-control-min: 40px; /* 44 px on touch (below) */
+  --oi-focus-width: 2px;
+  --oi-focus-offset: 2px;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --oi-gutter: 24px;
+  }
+}
+
+@media (pointer: coarse) {
+  :root {
+    --oi-control-min: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --oi-duration-fast: 0ms;
+    --oi-duration-base: 0ms;
+    --oi-duration-slow: 0ms;
+  }
+}

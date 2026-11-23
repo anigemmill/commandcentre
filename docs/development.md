@@ -30,7 +30,11 @@ The app runs on http://localhost:3000. `/api/health` reports whether the databas
 
 | Command | What it does |
 |---|---|
-| `npm run check` | Migration safety, type check, lint and unit tests (what CI runs, minus the build) |
+| `npm run check` | Migration safety, token guard, secret scan, type check, lint and unit tests (what CI runs, minus the build, the dependency audit and the production settings check) |
+| `npm run check:secrets` | Fails on committed credentials, or on `process.env` read anywhere in `src/` other than `src/server/env.ts` |
+| `npm run check:deps` | Fails on a high or critical advisory in a production dependency (`npm audit --omit=dev`) |
+| `npm run check:env:production` | Proves the production start-up rules: a complete production environment passes, missing settings or a local database fail |
+| `npm run check:tokens` | Fails on raw colours or direct theme tokens in `src/` (use semantic utilities; `docs/design-system.md`) |
 | `npm run test:db` | Database tests against the local database (starts it if needed via `npm run setup` first) |
 | `npm run check:env` | Validates the current environment the way the server does at start-up |
 | `npm run build` | Production build |
@@ -47,6 +51,17 @@ Postgres 16 service, on every push and pull request.
   the database tests fail if it returns anything.
 - New tables get **no** privileges for `anon` or `authenticated` by default (the foundation migration
   removes Supabase's broad defaults). Grant what a table needs explicitly.
+- `npm run db:migrate` applies `supabase/local/` only to a database on this machine. For any other
+  non-Supabase database it refuses unless `ALLOW_LOCAL_SHIM=true` is set deliberately.
+- **Target guard.** `npm run db:migrate` first checks the target (`src/server/db/migration-guard.ts`):
+  a Supabase project must be listed in `config/database-targets.json` (none yet, so only local
+  databases are accepted), and a database carrying another product's meta schema or identity marker
+  is refused. Nothing is written when the check fails.
+
+## Start-up checks
+
+A server validates its environment when it starts (`src/instrumentation.ts`). In production, missing or
+local values are logged at start-up and no route is served, rather than failing request by request.
 
 ## Not set up yet
 

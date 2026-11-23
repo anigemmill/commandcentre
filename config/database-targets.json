@@ -1,0 +1,5 @@
+{
+  "$comment": "Supabase projects this product's migrations may be applied to, by environment (src/server/db/migration-target.ts). Add an environment only when its project exists (commandcentre-dev at first deployment). Never list another product's project.",
+  "product": "command_centre",
+  "projects": {}
+}
