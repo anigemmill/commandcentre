@@ -3,10 +3,10 @@
   (security-review.md §1–§2 in anigemmill/outsideinprojects). Development project only.
 
   Needs the accounts-dev secret key. It is never in this repository or in an environment variable:
-  the cloud session's network proxy adds it as the `apikey` header for requests to the accounts-dev
-  host. Elsewhere, set ACCOUNTS_APIKEY in your shell.
+  the cloud session's network proxy adds it as the `apikey` header for requests under
+  /auth/v1/admin/ on the accounts-dev host (limit the network secret to that path). Elsewhere, set ACCOUNTS_APIKEY in your shell.
 
-  Run: NODE_USE_ENV_PROXY=1 npx tsx scripts/verify-accounts-oauth.ts
+  Run: ACCOUNTS_PUBLISHABLE_KEY=sb_publishable_… NODE_USE_ENV_PROXY=1 npx tsx scripts/verify-accounts-oauth.ts
   Creates a throwaway test user and a confidential OAuth client, runs the full code + PKCE S256 flow,
   checks the tokens with the shared verifier and the failure cases, then deletes both.
 */
@@ -17,8 +17,15 @@ const PROJECT = "urdrrzqqtmeuwlxksuov";
 const BASE = `https://${PROJECT}.supabase.co`;
 const AUTH = `${BASE}/auth/v1`;
 const REDIRECT = "http://localhost:3000/auth/callback";
-// Placeholder in the format Supabase expects; the proxy replaces it with the real key.
-const APIKEY = process.env.ACCOUNTS_APIKEY ?? ["sb", "secret", "placeholder"].join("_");
+// Admin calls (/admin/*): placeholder in the format Supabase expects; the proxy replaces it with the
+// secret key (the network secret is limited to /auth/v1/admin/). Every other call is made like a real
+// product would, with the project's publishable key: a secret key makes Supabase ignore the user's token.
+const SECRET = process.env.ACCOUNTS_APIKEY ?? ["sb", "secret", "placeholder"].join("_");
+const PUBLISHABLE = process.env.ACCOUNTS_PUBLISHABLE_KEY;
+if (!PUBLISHABLE) {
+  console.error("✗ Set ACCOUNTS_PUBLISHABLE_KEY (accounts-dev's publishable key; public, not a secret).");
+  process.exit(2);
+}
 
 let passed = 0;
 const failures: string[] = [];
@@ -31,7 +38,7 @@ const note = (what: string) => console.log(`  · ${what}`);
 
 async function call(path: string, init: RequestInit & { bearer?: string } = {}) {
   const headers = new Headers(init.headers);
-  headers.set("apikey", APIKEY);
+  headers.set("apikey", path.startsWith("/admin/") ? SECRET : PUBLISHABLE!);
   if (init.bearer) headers.set("authorization", `Bearer ${init.bearer}`);
   if (init.body && !headers.has("content-type")) headers.set("content-type", "application/json");
   const res = await fetch(path.startsWith("http") ? path : `${AUTH}${path}`, { ...init, headers, redirect: "manual" });
