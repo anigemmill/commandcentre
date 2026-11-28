@@ -105,6 +105,63 @@ export async function createAuthorisationRequest(input: { authorizeEndpoint: str
   return { url: url.toString(), state, nonce, codeVerifier };
 }
 
+/*
+  Code exchange (confidential client, client_secret_basic) and ID-token check. The access token from
+  the exchange is then checked with createVerifier like any other request's token.
+*/
+export type TokenResponse = { access_token: string; id_token?: string; refresh_token?: string; expires_in?: number };
+
+export async function exchangeCode(input: {
+  tokenEndpoint: string;
+  clientId: string;
+  clientSecret: string;
+  code: string;
+  codeVerifier: string;
+  redirectUri: string;
+  fetchImpl?: typeof fetch;
+}): Promise<{ ok: true; tokens: TokenResponse } | { ok: false; reason: string }> {
+  const secret = requireClientSecret(input.clientSecret);
+  try {
+    const res = await (input.fetchImpl ?? fetch)(input.tokenEndpoint, {
+      method: "POST",
+      headers: {
+        "content-type": "application/x-www-form-urlencoded",
+        authorization: `Basic ${Buffer.from(`${encodeURIComponent(input.clientId)}:${encodeURIComponent(secret)}`).toString("base64")}`,
+      },
+      body: new URLSearchParams({ grant_type: "authorization_code", code: input.code, code_verifier: input.codeVerifier, redirect_uri: input.redirectUri, client_id: input.clientId }),
+      redirect: "error",
+      signal: AbortSignal.timeout(10_000),
+    });
+    const body = (await res.json().catch(() => ({}))) as Partial<TokenResponse> & { error?: string };
+    if (!res.ok || typeof body.access_token !== "string") return { ok: false, reason: body.error ?? `http_${res.status}` };
+    return { ok: true, tokens: body as TokenResponse };
+  } catch {
+    return { ok: false, reason: "unreachable" };
+  }
+}
+
+/** ID token: ES256, exact issuer, audience is this client, nonce matches the one we sent. */
+export function createIdTokenVerifier(options: VerifierOptions) {
+  if (!options.issuer || !options.clientId) throw new Error("ID token verifier needs an issuer and a client id");
+  const keys = options.jwks instanceof URL ? createRemoteJWKSet(options.jwks, { cooldownDuration: 30_000, cacheMaxAge: 600_000 }) : createLocalJWKSet(options.jwks);
+  return async function verifyIdToken(token: string | undefined, nonce: string): Promise<{ ok: true; claims: JWTPayload } | { ok: false; reason: VerifyFailure | "nonce" }> {
+    if (!token) return { ok: false, reason: "missing" };
+    try {
+      const { payload } = await jwtVerify(token, keys, {
+        algorithms: [...ALLOWED_ALGORITHMS],
+        issuer: options.issuer,
+        audience: options.clientId,
+        clockTolerance: Math.min(options.clockToleranceSeconds ?? 60, 60),
+        requiredClaims: ["exp", "iat", "sub", "nonce"],
+      });
+      if (!nonce || payload.nonce !== nonce) return { ok: false, reason: "nonce" };
+      return { ok: true, claims: payload };
+    } catch (e) {
+      return { ok: false, reason: classify(e) };
+    }
+  };
+}
+
 /** Confidential clients only: a product without a client secret must not exchange codes. */
 export function requireClientSecret(secret: string | undefined): string {
   if (!secret || secret.length < 16) throw new Error("A confidential client secret is required to exchange authorisation codes");

@@ -24,6 +24,7 @@ export default async function OrgLayout({ params, children }: { params: Promise<
         personEmail: person.email,
         workspaces: spaces.map((w) => ({ id: w.id, name: w.name })),
         signOut,
+        devSession: p.via === "development",
       }}
     >
       {children}

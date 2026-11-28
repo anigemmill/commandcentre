@@ -1,7 +1,7 @@
 import { exportJWK, generateKeyPair, SignJWT, type JWK } from "jose";
 import { createHmac } from "node:crypto";
 import { beforeAll, describe, expect, it } from "vitest";
-import { createAuthorisationRequest, createVerifier, requireClientSecret } from "../../../packages/foundation/auth/verify";
+import { createAuthorisationRequest, createIdTokenVerifier, createVerifier, exchangeCode, requireClientSecret } from "../../../packages/foundation/auth/verify";
 
 const ISS = "https://accounts.example/auth/v1";
 const CLIENT = "command-centre-test";
@@ -112,5 +112,53 @@ describe("authorisation request", () => {
     expect(() => requireClientSecret(undefined)).toThrow();
     expect(() => requireClientSecret("short")).toThrow();
     expect(requireClientSecret("a-long-enough-secret")).toBe("a-long-enough-secret");
+  });
+});
+
+describe("ID token", () => {
+  const idVerifier = () => createIdTokenVerifier({ issuer: ISS, clientId: CLIENT, jwks: { keys: [jwk] } });
+  const idToken = (claims: Record<string, unknown>, key = es256) =>
+    new SignJWT({ nonce: "n-1", ...claims })
+      .setProtectedHeader({ alg: "ES256", kid: "k1" })
+      .setIssuer(ISS)
+      .setSubject(SUB)
+      .setAudience((claims.aud as string) ?? CLIENT)
+      .setIssuedAt()
+      .setExpirationTime("10m")
+      .sign(key);
+
+  it("accepts our audience and nonce", async () => {
+    expect((await idVerifier()(await idToken({}), "n-1")).ok).toBe(true);
+  });
+  it("refuses another audience, a wrong or missing nonce, and a wrong key", async () => {
+    expect((await idVerifier()(await idToken({ aud: "reel-deal" }), "n-1")).ok).toBe(false);
+    expect(await idVerifier()(await idToken({}), "n-2")).toEqual({ ok: false, reason: "nonce" });
+    expect((await idVerifier()(await idToken({}), "")).ok).toBe(false);
+    expect((await idVerifier()(await idToken({}, otherEs256), "n-1")).ok).toBe(false);
+    expect((await idVerifier()(undefined, "n-1")).ok).toBe(false);
+  });
+});
+
+describe("code exchange", () => {
+  const base = { tokenEndpoint: "https://accounts.example/auth/v1/oauth/token", clientId: CLIENT, clientSecret: "a-long-enough-secret", code: "c1", codeVerifier: "v1", redirectUri: "http://localhost:3000/auth/callback" };
+
+  it("authenticates with the client secret (Basic) and sends the PKCE verifier", async () => {
+    let seen: { headers: Headers; body: URLSearchParams } | undefined;
+    const fetchImpl = (async (_url: string, init: RequestInit) => {
+      seen = { headers: new Headers(init.headers), body: new URLSearchParams(init.body as URLSearchParams) };
+      return new Response(JSON.stringify({ access_token: "t", id_token: "i" }), { status: 200 });
+    }) as unknown as typeof fetch;
+    expect(await exchangeCode({ ...base, fetchImpl })).toEqual({ ok: true, tokens: { access_token: "t", id_token: "i" } });
+    expect(seen!.headers.get("authorization")).toBe(`Basic ${Buffer.from(`${CLIENT}:a-long-enough-secret`).toString("base64")}`);
+    expect(seen!.body.get("code_verifier")).toBe("v1");
+    expect(seen!.body.get("grant_type")).toBe("authorization_code");
+  });
+
+  it("fails closed on errors, odd responses and unreachable servers, and refuses without a secret", async () => {
+    const reply = (status: number, body: unknown) => (async () => new Response(JSON.stringify(body), { status })) as unknown as typeof fetch;
+    expect(await exchangeCode({ ...base, fetchImpl: reply(400, { error: "invalid_grant" }) })).toEqual({ ok: false, reason: "invalid_grant" });
+    expect((await exchangeCode({ ...base, fetchImpl: reply(200, { token: "x" }) })).ok).toBe(false);
+    expect(await exchangeCode({ ...base, fetchImpl: (async () => { throw new Error("down"); }) as unknown as typeof fetch })).toEqual({ ok: false, reason: "unreachable" });
+    await expect(exchangeCode({ ...base, clientSecret: "" })).rejects.toThrow(/confidential/);
   });
 });

@@ -21,6 +21,9 @@ describe("instrumentation register", () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("APP_URL", "https://app.example.com");
     vi.stubEnv("DATABASE_URL", "postgres://u:p@db.example.com:5432/db");
+    vi.stubEnv("ACCOUNTS_ISSUER", "https://accounts.example.com/auth/v1");
+    vi.stubEnv("ACCOUNTS_CLIENT_ID", "cc-example");
+    vi.stubEnv("ACCOUNTS_CLIENT_SECRET", "ci-only-example-secret-0123");
     const { register } = await import("./instrumentation");
     await expect(register()).resolves.toBeUndefined();
   });

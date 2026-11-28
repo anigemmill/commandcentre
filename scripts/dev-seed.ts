@@ -8,6 +8,10 @@
     Ben Test     member of "Test Org: Coastal Tours"
     Casey Test   owner of "Test Org: Alpine Lodge"  (cannot see Coastal Tours: isolation check)
 
+  npm run db:seed -- --member you@example.com [owner|admin|member]
+    adds a real Outside In account (after its first sign-in to Command Centre) to "Test Org: Coastal
+    Tours", standing in for the membership events the account service will send.
+
   Also adds sample workspaces, objectives and tasks to Coastal Tours (dates relative to today), only
   when that organisation has no workspaces yet, so the dashboard has something real to show.
 */
@@ -43,6 +47,16 @@ try {
       await tx`insert into public.memberships (org_id, user_id, org_role) values (${ORGS[p.org].id}, ${p.id}, ${p.role}) on conflict do nothing`;
     }
     await sampleWork(tx);
+    const i = process.argv.indexOf("--member");
+    if (i > 0) {
+      const email = process.argv[i + 1] ?? "";
+      const role = ["owner", "admin", "member"].includes(process.argv[i + 2]) ? process.argv[i + 2] : "owner";
+      const [u] = await tx<{ id: string }[]>`select id from public.users where lower(email) = lower(${email})`;
+      if (!u) throw new Error(`No one with the email ${email} has signed in to Command Centre yet. Sign in once, then run this again.`);
+      await tx`insert into public.memberships (org_id, user_id, org_role) values (${ORGS[0].id}, ${u.id}, ${role})
+               on conflict (org_id, user_id) do update set org_role = excluded.org_role, status = 'active'`;
+      console.log(`✓ ${email} is now ${role} of ${ORGS[0].name}`);
+    }
   });
   console.log(`✓ test organisations and people present (${PEOPLE.map((p) => p.name).join(", ")})`);
 } catch (e) {

@@ -9,8 +9,10 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 check() { env -i PATH="$PATH" HOME="${HOME:-/tmp}" "$@" npm run --silent check:env >/dev/null 2>&1; }
 fail=0
+# Example shared sign-in settings (made up; the secret is a ci-only throwaway).
+ACC="ACCOUNTS_ISSUER=https://accounts.example.com/auth/v1 ACCOUNTS_CLIENT_ID=cc-example ACCOUNTS_CLIENT_SECRET=ci-only-example-secret-0123"
 
-if check NODE_ENV=production APP_URL=https://app.example.com DATABASE_URL=postgres://ci@db.example.com:5432/app; then
+if check NODE_ENV=production APP_URL=https://app.example.com DATABASE_URL=postgres://ci@db.example.com:5432/app $ACC; then
   echo "✓ complete production environment accepted"
 else
   echo "✗ complete production environment was rejected"; fail=1
@@ -28,7 +30,7 @@ else
   echo "✓ production environment with a local database rejected"
 fi
 
-if check NODE_ENV=production APP_URL=https://app.example.com DATABASE_URL=postgres://ci@db.example.com:5432/app DEV_IDENTITY=enabled; then
+if check NODE_ENV=production APP_URL=https://app.example.com DATABASE_URL=postgres://ci@db.example.com:5432/app $ACC DEV_IDENTITY=enabled; then
   echo "✗ production environment with the development sign-in was accepted"; fail=1
 else
   echo "✓ production environment with the development sign-in rejected"

@@ -26,7 +26,8 @@
     "setup": "npm run db:local && DATABASE_URL=$(scripts/db-local.sh url) npm run db:migrate && DATABASE_URL=$(scripts/db-local.sh url) npm run db:seed",
     "test:db": "TEST_DATABASE_URL=${TEST_DATABASE_URL:-$(scripts/db-local.sh url)} vitest run src/server/db",
     "db:seed": "node --env-file-if-exists=.env.local --import tsx scripts/dev-seed.ts",
-    "test:e2e": "node scripts/smoke-e2e.cjs"
+    "test:e2e": "node scripts/smoke-e2e.cjs",
+    "test:e2e:oauth": "node scripts/smoke-oauth.cjs"
   },
   "dependencies": {
     "jose": "6.2.16",

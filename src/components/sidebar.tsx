@@ -16,6 +16,7 @@ export type NavData = {
   personEmail: string;
   workspaces: { id: string; name: string }[];
   signOut: (formData: FormData) => Promise<void>;
+  devSession: boolean;
 };
 
 const icons = {
@@ -93,9 +94,11 @@ function NavBody({ nav }: { nav: NavData }) {
         <form action={nav.signOut} className="mt-2">
           <button className="text-sm text-muted underline decoration-line underline-offset-4 hover:text-ink">Sign out</button>
         </form>
-        <p role="note" className="mt-4 font-mono text-xs uppercase leading-relaxed tracking-[0.08em] text-accent-ink">
-          Development sign-in · test data
-        </p>
+        {nav.devSession && (
+          <p role="note" className="mt-4 font-mono text-xs uppercase leading-relaxed tracking-[0.08em] text-accent-ink">
+            Development sign-in · test data
+          </p>
+        )}
       </div>
     </div>
   );

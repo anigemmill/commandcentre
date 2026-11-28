@@ -45,18 +45,36 @@ Facts that shape the integration:
 - Supabase ignores the user's token when a request carries the **secret** key, so anything acting
   for a person must use the publishable key (the verification script does this).
 
-## Next: switching Command Centre to shared sign-in (OAuth server now enabled on accounts-dev)
+## Shared sign-in (built 28 Nov 2026, local development against accounts-dev)
 
-1. Register Command Centre as a confidential client (code + PKCE S256), redirect
-   `<APP_URL>/auth/callback`.
-2. Add `ACCOUNTS_ISSUER`, `ACCOUNTS_CLIENT_ID` and `ACCOUNTS_CLIENT_SECRET` to `src/server/env.ts`
-   (secret required in production via `requireClientSecret`).
-3. In `src/server/auth/session.ts`, point `verifier()` at the account service's issuer and JWKS URL.
-4. Replace the sign-in page's buttons with a redirect built by `createAuthorisationRequest`; add
-   `/auth/callback` (check state, exchange the code with the secret, verify, set the cookie); add
-   refresh-token handling.
-5. Fill the mirrors from signed account events instead of `db:seed`.
-6. Delete `dev-issuer.ts`, the development sign-in branch of the sign-in page, `DEV_IDENTITY` and
-   `scripts/dev-seed.ts`.
+"Sign in with your Outside In account" is now the main sign-in. Flow and checks:
 
-Pages, server actions, the data layer and RLS don't change: they only see the verified `Principal`.
+1. `/auth/sign-in` builds the request (PKCE S256, random `state` and `nonce`), keeps them in a
+   10-minute httpOnly cookie limited to `/auth`, and redirects to the account service.
+2. The account service signs the person in; its consent page auto-approves Command Centre
+   (first-party client, allowed redirect origin) or refuses.
+3. `/auth/callback` fails closed at each step: `state` must match (constant-time) → code exchanged
+   with the PKCE verifier and the client secret (Basic) → access token verified by the shared
+   verifier (ES256, issuer, `client_id`) → ID token verified (ES256, audience, nonce, same `sub`) →
+   profile mirrored (id, email, name) → httpOnly SameSite=Lax session cookie for the token's lifetime.
+4. No refresh token is stored. After an hour the person signs in again, which passes straight through
+   while their Outside In session is active (no password prompt).
+5. Sign-out ends the Command Centre session only (D6); the Outside In account stays signed in.
+
+Organisation memberships are not created at sign-in. Until the account service sends membership
+events, add yourself locally with `npm run db:seed -- --member <email> owner`.
+
+| Setting | Where |
+|---|---|
+| OAuth client "Command Centre (local development)" | accounts-dev, confidential, client_secret_basic, redirect `http://localhost:3000/auth/callback` only. Client id `86d968a0-3341-4489-9c5f-a01aeb917e10` |
+| `ACCOUNTS_ISSUER`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET` | `.env.local` only (the secret is shown once; regenerate it under Authentication → OAuth Apps for another machine) |
+| Account service `.env.local` | `FIRST_PARTY_CLIENT_IDS=<client id>`, `PRODUCT_REDIRECT_ORIGINS=http://localhost:3000` |
+| Production | `parseEnv` requires all three `ACCOUNTS_*` (https issuer) and refuses `DEV_IDENTITY` |
+
+Tested: `npm run test:e2e:oauth -- <account.json>` (real accounts-dev account, browser): redirect to the
+account service, sign-in, auto-approved consent, back to Command Centre, httpOnly cookie holding the
+ES256 token for this client, state cookie cleared, forged callback refused, sign-out, silent re-sign-in.
+
+**Still open:** accounts-dev's Site URL must be `http://localhost:3100` (it is the default
+`http://localhost:3000`, which sends the consent step to Command Centre). The browser test steps in
+for it until then. The development sign-in stays available locally for multi-person testing.

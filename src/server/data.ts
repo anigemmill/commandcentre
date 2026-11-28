@@ -35,13 +35,26 @@ export async function devPeople() {
     from public.users u
     left join public.memberships m on m.user_id = u.id and m.status = 'active'
     left join public.organisations o on o.id = m.org_id
+    where u.id::text like '0e5e0000-%'
     group by u.id order by u.display_name`;
 }
 
 export async function devPersonExists(id: string) {
   if (!devIdentityEnabled()) return false;
-  const rows = await db()`select 1 from public.users where id = ${id}`;
+  const rows = await db()`select 1 from public.users where id = ${id} and id::text like '0e5e0000-%'`;
   return rows.length === 1;
+}
+
+/*
+  Profile mirror from a verified sign-in (user id, email, name from the account service's tokens).
+  Written by the service, not by people (they can only read users). Organisation memberships are
+  NOT created here: they come from the account service's events (not built yet) or, in local
+  development, from npm run db:seed -- --member <email>.
+*/
+export async function mirrorSignedInUser(u: { id: string; email: string; displayName: string }) {
+  await db()`
+    insert into public.users (id, display_name, email) values (${u.id}, ${u.displayName.slice(0, 120)}, ${u.email})
+    on conflict (id) do update set email = excluded.email, display_name = excluded.display_name`;
 }
 
 export const me = (userId: string) =>
