@@ -51,7 +51,7 @@ try {
     if (i > 0) {
       const email = process.argv[i + 1] ?? "";
       const role = ["owner", "admin", "member"].includes(process.argv[i + 2]) ? process.argv[i + 2] : "owner";
-      const [u] = await tx<{ id: string }[]>`select id from public.users where lower(email) = lower(${email})`;
+      const [u] = await tx<{ id: string }[]>`select id from public.users where lower(email) = lower(${email}) order by created_at desc limit 1`;
       if (!u) throw new Error(`No one with the email ${email} has signed in to Command Centre yet. Sign in once, then run this again.`);
       await tx`insert into public.memberships (org_id, user_id, org_role) values (${ORGS[0].id}, ${u.id}, ${role})
                on conflict (org_id, user_id) do update set org_role = excluded.org_role, status = 'active'`;
