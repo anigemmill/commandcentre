@@ -15,7 +15,6 @@ const { chromium } = require('playwright');
 const { readFileSync } = require('node:fs');
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { execSync } = require('node:child_process');
-const SP = require('node:path').dirname(require('node:path').resolve(process.argv[2] || 'missing.json'));
 const ACCOUNT_FILE = process.argv[2];
 const user = JSON.parse(readFileSync(ACCOUNT_FILE, 'utf8'));
 const ok = (m) => console.log('✓ ' + m);
@@ -59,7 +58,6 @@ const ok = (m) => console.log('✓ ' + m);
   await p.reload();
   await p.waitForURL(/\/orgs\/[0-9a-f-]{36}$/);
   await p.getByRole('heading', { level: 1, name: /Good (morning|afternoon|evening), Sign-in\./ }).waitFor(); ok('after membership is added: Today dashboard, greeted by account name');
-  await p.screenshot({ path: SP + '/oauth-today.png' });
   // replay: the callback can't be reused
   const r = await p.goto('http://localhost:3000/auth/callback?code=forged&state=forged');
   if (!p.url().includes('/sign-in?error=state') && !p.url().includes('/orgs')) throw new Error('replay not refused: ' + p.url());
